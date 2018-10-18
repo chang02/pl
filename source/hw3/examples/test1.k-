@@ -1,0 +1,9 @@
+let proc numch(x) = 
+	let numch1(x) = 1 in
+	if (x < 10) then numch1(x)
+    else 0
+in
+
+
+(read n)
+write(numch(n))

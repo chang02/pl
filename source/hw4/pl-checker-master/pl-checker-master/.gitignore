@@ -1,0 +1,12 @@
+ex*.ml
+*.cmi
+*.cmo
+*.cmx
+*.o
+*.pdf
+*.swp
+*.out
+hw5
+hw6
+hw7
+hw8

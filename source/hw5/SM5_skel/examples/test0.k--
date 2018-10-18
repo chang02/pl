@@ -1,0 +1,5 @@
+(* Public test case 1 *)
+
+write 1 + 2
+
+(* Output : prints out "3\n" *)

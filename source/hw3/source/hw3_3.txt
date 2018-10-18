@@ -1,0 +1,85 @@
+let proc qinit (t) = 
+  { n := t, next := {} }
+in
+let proc find_last (q) = 
+  if q.next = {} then q else find_last (q.next)
+in
+let proc enq (t, q) =
+  let lq := find_last (q) in
+  let nq := qinit (t) in
+  (lq.next := nq;
+  q)
+in
+let proc qisEmpty (q) = 
+  if q={} then true else false
+in
+let proc qcheck (q) = 
+  if q.n = {} then q.next else q
+in
+let proc qnum (q, m) = 
+  if q = {} then m else (m := m+1 ; qnum (q.next, m) ) 
+in
+let proc find_node (q) = 
+  q.n
+in
+let proc deq (q) = 
+  (q := q.next;
+  q)
+in
+let proc leaf (i) =
+  { left := {}, v := i, right := {} } 
+in 
+  
+let proc makeLtree (l, t) = 
+  { left := t, v := l, right := {} } 
+in
+let proc makeRtree (r, t) = 
+  { left := {}, v := r, right := t }
+in
+let proc makeTree (i, t1, t2) =
+  { left := t1, v := i, right := t2 }
+in
+let proc isEmpty (t) =
+  if t = {} then true else false
+in
+let proc rTree (t) = 
+  t.right
+in 
+let proc lTree (t) =
+  t.left
+in
+let proc nodeVal (t) = 
+  t.v
+in
+let proc dft (t)= 
+  (write (nodeVal (t));
+  (if not (isEmpty (lTree (t))) 
+  then (
+  dft (lTree (t)); 
+  (if not (isEmpty (rTree (t))) then dft (rTree (t)) else unit)
+  )
+  else (
+    if not (isEmpty (rTree (t))) then (dft (rTree (t))) else unit)
+  ))
+in
+
+let proc bft (t) =
+  let q := qinit (t) in
+  
+  while not (qisEmpty (q)) do (
+    let node := find_node (q) in 
+
+    (write (nodeVal (node));
+
+    (if not (isEmpty (lTree (node))) 
+    then (let q := enq ((lTree (node)), q) in unit)
+    else unit);
+
+    (if not (isEmpty (rTree (node))) 
+    then (let q := enq (rTree (node), q) in unit)
+    else unit);
+    q := deq (q)
+    ) 
+  )
+in 
+2017

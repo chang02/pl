@@ -1,0 +1,5 @@
+(* Public testcase 1 : Simple Raise/Handle with If, Equal, Fn *)
+
+1
+
+(* Output : 200 *)
