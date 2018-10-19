@@ -50,6 +50,4 @@ let proc bft (t) =
         i := i+1
     )
 in
-let t1 := makeTree (1, leaf(2), leaf(3)) in 
-let t0 := makeTree (0, t1, leaf(4)) in 
-bft (t0)
+2018
