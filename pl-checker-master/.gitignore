@@ -1,4 +1,3 @@
-ex*.ml
 *.cmi
 *.cmo
 *.cmx
