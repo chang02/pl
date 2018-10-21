@@ -1,0 +1,7 @@
+abcde 꽉 채우고 순서대로 정렬을 한다
+첨에 Items (int, int, int) 이면 (int, int, int)가 답 한번 쭉 돌림
+
+한번 돌린거랑 한번 items에 대해 돌린거랑 같이 보면서
+item인 경우, same,인 경우, common인 경우, except인 경우를 적용
+item 인 경우 그냥 리스트 연결
+same인 경우 한번 돌린거에서 두 id (자기꺼랑 같다고한거) 합치기
