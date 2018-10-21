@@ -12,11 +12,12 @@ type require = id * (cond list)
 
 
 let rec sort_rql (rql: require list) : require list =
-	[(A, if ((List.assoc_opt A rql) = None) then [] else (List.assoc_opt A rql))]@
-	[(B, if ((List.assoc_opt B rql) = None) then [] else (List.assoc_opt B rql))]@
-	[(C, if ((List.assoc_opt C rql) = None) then [] else (List.assoc_opt C rql))]@
-	[(D, if ((List.assoc_opt D rql) = None) then [] else (List.assoc_opt D rql))]@
-	[(E, if ((List.assoc_opt E rql) = None) then [] else (List.assoc_opt E rql))]
+	let rec find rql id =
+		match rql with
+		| [] -> []
+		| hd::tl -> if ((fst hd)=id) then (snd hd) else (find tl id)
+	in
+	[(A, find rql A)]@[(B, find rql B)]@[(C, find rql C)]@[(D, find rql D)]@[(E, find rql E)]
 
 
 let rec shoppingList (rql: require list) : (id * gift list) list =
