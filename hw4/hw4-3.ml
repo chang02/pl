@@ -33,9 +33,9 @@ let rec except_gift ((gl: gift list), (el: gift list), (res: gift list)) : gift 
 let rec precal_condl (condl: cond list) : gift list =
 	match condl with
 	| [] -> []
-	| ((Items gl)::tl) -> [gl] @ (precal_condl tl)
-	| ((Same i)::tl) -> pre_condl tl
-	| ((Common (c1, c2))::tl) -> (common_gift ((precal_condl [c1]), (precal_cond1 [c2]), [])) @ (precal_condl tl)
+	| ((Items gl)::tl) -> gl @ (precal_condl tl)
+	| ((Same i)::tl) -> precal_condl tl
+	| ((Common (c1, c2))::tl) -> (common_gift ((precal_condl [c1]), (precal_condl [c2]), [])) @ (precal_condl tl)
 	| ((Except (c, gl))::tl) -> (except_gift ((precal_condl [c]), gl, [])) @ (precal_condl tl)
 
 
