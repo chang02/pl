@@ -22,12 +22,12 @@ let rec sort_rql (rql: require list) : require list =
 let rec common_gift ((gl1: gift list), (gl2: gift list), (res: gift list)) : gift list =
 	match gl1 with
 	| [] -> res
-	| (hd::tl) -> if (List.mem hd gl2) then (common_gift tl gl2 (hd::res)) else (common_gift tl gl2 res)
+	| (hd::tl) -> if (List.mem hd gl2) then (common_gift (tl,gl2,(hd::res))) else (common_gift (tl,gl2,res))
 
 let rec except_gift ((gl: gift list), (el: gift list), (res: gift list)) : gift list =
 	match gl with
 	| [] -> res
-	| (hd::tl) -> if (List.mem hd el) then (except_gfit tl el res) else (except_gift tl el (hd::res))
+	| (hd::tl) -> if (List.mem hd el) then (except_gfit (tl,el,res)) else (except_gift (tl,el,(hd::res)))
 
 
 let rec precal_condl (condl: cond list) : gift list =
