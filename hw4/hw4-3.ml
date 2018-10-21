@@ -22,4 +22,4 @@ let rec sort_rql (rql: require list) : require list =
 
 let rec shoppingList (rql: require list) : (id * gift list) list =
 	let sorted_rql = sort_rql rql in
-	[(A, [1;2]);(B, [2;3]))
+	[(A, [1;2]);(B, [2;3])]
