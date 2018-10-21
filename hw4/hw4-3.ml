@@ -27,7 +27,7 @@ let rec common_gift ((gl1: gift list), (gl2: gift list), (res: gift list)) : gif
 let rec except_gift ((gl: gift list), (el: gift list), (res: gift list)) : gift list =
 	match gl with
 	| [] -> res
-	| (hd::tl) -> if (List.mem hd el) then (except_gfit (tl,el,res)) else (except_gift (tl,el,(hd::res)))
+	| (hd::tl) -> if (List.mem hd el) then (except_gift (tl,el,res)) else (except_gift (tl,el,(hd::res)))
 
 
 let rec precal_condl (condl: cond list) : gift list =
