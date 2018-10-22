@@ -57,8 +57,20 @@ let rec cal_condll ((condll: cond list list), (sl1: (id * gift list) list)) : gi
 	| hd::tl -> [(cal_condl (hd, sl1))] @ (cal_condll (tl, sl1))
 
 let rec do_cal_condll_while_diff ((condll: cond list list), (sl1: (id * gift list) list)) : gift list list =
+	let rec isEqual ((l1: gift list list), (l2: gift list list)) : bool =
+		let rec isEqual2 ((g1: gift list), (g2: gift list)) : bool =
+			(match (g1, g2) with
+			| (hd1::tl1, hd2::tl2) -> if (hd1=hd2) then isEqual2 (tl1, tl2) else false
+			| ([], []) -> true
+			| _ -> false)
+		in
+		(match (l1, l2) with
+		| (hd1::tl1, hd2::tl2) -> if isEqual2(hd1, hd2) then isEqual(tl1, tl2) else false
+		| ([], []) -> true
+		| _ -> false)
+	in
 	let (idl, gll) = List.split sl1 in
-	if (cal_condll (condll, sl1) = gll) then gll
+	if isEqual (cal_condll (condll, sl1), gll) then gll
 	else do_cal_condll_while_diff (condll, (List.combine [A;B;C;D;E] (cal_condll (condll, sl1))))
 
 
