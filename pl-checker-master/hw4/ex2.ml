@@ -10,7 +10,8 @@ Items of gift list (* 선물들 *)
 
 type require = id * (cond list)
 
-
+(* let printlist l = List.iter (fun x -> print_int x) l ; print_string(" ")
+let printlistlist l = List.iter (fun ll -> printlist ll) l *)
 let rec sort_rql (rql: require list) : require list =
 	let rec find rql id =
 		match rql with
@@ -56,27 +57,35 @@ let rec cal_condll ((condll: cond list list), (sl1: (id * gift list) list)) : gi
 	| [] -> []
 	| hd::tl -> [(cal_condl (hd, sl1))] @ (cal_condll (tl, sl1))
 
-let rec do_cal_condll_while_diff ((condll: cond list list), (sl1: (id * gift list) list)) : gift list list =
-	let rec isEqual ((l1: gift list list), (l2: gift list list)) : bool =
-		let rec isEqual2 ((g1: gift list), (g2: gift list)) : bool =
-			(match (g1, g2) with
-			| (hd1::tl1, hd2::tl2) -> if (hd1=hd2) then isEqual2 (tl1, tl2) else false
-			| ([], []) -> true
-			| _ -> false)
-		in
-		(match (l1, l2) with
-		| (hd1::tl1, hd2::tl2) -> if isEqual2(hd1, hd2) then isEqual(tl1, tl2) else false
+let rec isEqual ((l1: gift list list), (l2: gift list list)) : bool =
+	let rec isEqual2 ((g1: gift list), (g2: gift list)) : bool =
+		(match (g1, g2) with
+		| (hd1::tl1, hd2::tl2) -> if (hd1=hd2) then isEqual2 (tl1, tl2) else false
 		| ([], []) -> true
 		| _ -> false)
 	in
+	(match (l1, l2) with
+	| (hd1::tl1, hd2::tl2) -> if isEqual2((List.sort compare hd1), (List.sort compare hd2)) then isEqual(tl1, tl2) else false
+	| ([], []) -> true
+	| _ -> false)
+
+let rec do_cal_condll_while_diff ((condll: cond list list), (sl1: (id * gift list) list)) : gift list list =
 	let (idl, gll) = List.split sl1 in
-	if isEqual (cal_condll (condll, sl1), gll) then gll
-	else do_cal_condll_while_diff (condll, (List.combine [A;B;C;D;E] (cal_condll (condll, sl1))))
+	let nextgll = cal_condll (condll, sl1) in
+	let gll = remove_gll_dup gll in
+	let nextgll = remove_gll_dup nextgll in
+	(* printlistlist gll;
+	print_string("\n");
+	printlistlist nextgll;
+	print_string("\n"); *)
+	if isEqual (nextgll, gll) then nextgll
+	else do_cal_condll_while_diff (condll, (List.combine [A;B;C;D;E] nextgll))
 
 
 let rec shoppingList (rql: require list) : (id * gift list) list =
 	let sorted_rql = sort_rql rql in
 	let idl, condll = List.split sorted_rql in
-	let sl1 = List.combine [A;B;C;D;E] (remove_gll_dup (List.map precal_condl condll)) in
-	let result = List.combine [A;B;C;D;E] (remove_gll_dup (do_cal_condll_while_diff(condll, sl1))) in
-	result
+	let sl1 = List.combine [A;B;C;D;E] (List.map precal_condl condll) in
+	List.combine [A;B;C;D;E] (do_cal_condll_while_diff (condll, sl1))
+
+(* shoppingList [ (A, [Items [3;1;4;2] ; Common (Same B, Same C)]) ; (B, [Common (Same C, Items[3;2])]) ; (C, [Items[1] ; (Except (Same A, [3]) ) ]) ] *)
