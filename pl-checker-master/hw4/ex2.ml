@@ -3,15 +3,13 @@ type id = A | B | C | D | E
 type gift = int
 
 type cond = 
-Items of gift list (* 선물들 *)
-| Same of id (* 어느 조카의 선물들 *)
-| Common of cond * cond (* 두조건에 공통된 선물들 *)
-| Except of cond * gift list (* 조건에서 어느 선물들은 빼고 *)
+Items of gift list
+| Same of id
+| Common of cond * cond
+| Except of cond * gift list
 
 type require = id * (cond list)
 
-(* let printlist l = List.iter (fun x -> print_int x) l ; print_string(" ")
-let printlistlist l = List.iter (fun ll -> printlist ll) l *)
 let rec sort_rql (rql: require list) : require list =
 	let rec find rql id =
 		match rql with
@@ -34,15 +32,6 @@ let rec except_gift ((gl: gift list), (el: gift list), (res: gift list)) : gift 
 	match gl with
 	| [] -> res
 	| (hd::tl) -> if (List.mem hd el) then (except_gift (tl,el,res)) else (except_gift (tl,el,(hd::res)))
-
-
-let rec precal_condl (condl: cond list) : gift list =
-	match condl with
-	| [] -> []
-	| ((Items gl)::tl) -> gl @ (precal_condl tl)
-	| ((Same i)::tl) -> precal_condl tl
-	| ((Common (c1, c2))::tl) -> (common_gift ((precal_condl [c1]), (precal_condl [c2]), [])) @ (precal_condl tl)
-	| ((Except (c, gl))::tl) -> (except_gift ((precal_condl [c]), gl, [])) @ (precal_condl tl)
 
 let rec cal_condl ((condl: cond list), (sl: (id * gift list) list)) : gift list =
 	match condl with
@@ -83,5 +72,3 @@ let rec shoppingList (rql: require list) : (id * gift list) list =
 	let idl, condll = List.split sorted_rql in
 	let sl = List.combine [A;B;C;D;E] [[];[];[];[];[]] in
 	List.combine [A;B;C;D;E] (do_cal_condll_while_diff (condll, sl))
-
-(* shoppingList [ (A, [Items [3;1;4;2] ; Common (Same B, Same C)]) ; (B, [Common (Same C, Items[3;2])]) ; (C, [Items[1] ; (Except (Same A, [3]) ) ]) ] *)
