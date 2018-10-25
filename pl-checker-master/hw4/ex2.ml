@@ -85,7 +85,8 @@ let rec do_cal_condll_while_diff ((condll: cond list list), (sl1: (id * gift lis
 let rec shoppingList (rql: require list) : (id * gift list) list =
 	let sorted_rql = sort_rql rql in
 	let idl, condll = List.split sorted_rql in
-	let sl1 = List.combine [A;B;C;D;E] (List.map precal_condl condll) in
+	(* let sl1 = List.combine [A;B;C;D;E] (List.map precal_condl condll) in *)
+    let sl1 = List.combine [A;B;C;D;E] [[];[];[];[];[]] in
 	List.combine [A;B;C;D;E] (do_cal_condll_while_diff (condll, sl1))
 
 (* shoppingList [ (A, [Items [3;1;4;2] ; Common (Same B, Same C)]) ; (B, [Common (Same C, Items[3;2])]) ; (C, [Items[1] ; (Except (Same A, [3]) ) ]) ] *)
