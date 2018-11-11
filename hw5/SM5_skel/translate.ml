@@ -39,8 +39,8 @@ module Translator = struct
             let fvar = "@from@" in
             let tvar = "@to@" in
             trans (
-                K.LETV (fvar, e1, K.LETV (tvar, K.ADD (e2, K.NUM 1), K.LETV (id, K.VAR fvar, 
-                    K.WHILE (K.LESS (K.VAR fvar, K.VAR tvar),
+                K.LETV (fvar, e1, K.LETV (tvar, K.ADD (e2, K.NUM 1), K.LETV (id, e1, 
+                    K.WHILE (K.LESS (K.VAR id, K.VAR tvar),
                         K.SEQ (e3, K.ASSIGN (id, K.ADD (K.VAR id, K.NUM 1)))
                     )
                 )))
