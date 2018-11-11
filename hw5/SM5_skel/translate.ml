@@ -36,14 +36,13 @@ module Translator = struct
         )
     | K.FOR (id, e1, e2, e3) ->
         (
-            let fvar = "@from@" in
             let tvar = "@to@" in
             trans (
-                K.LETV (fvar, e1, K.LETV (tvar, K.ADD (e2, K.NUM 1), K.LETV (id, e1, 
+                K.LETV (tvar, K.ADD (e2, K.NUM 1), K.LETV (id, e1, 
                     K.WHILE (K.LESS (K.VAR id, K.VAR tvar),
                         K.SEQ (e3, K.ASSIGN (id, K.ADD (K.VAR id, K.NUM 1)))
                     )
-                )))
+                ))
             )
         )
     | K.LETV (id, e1, e2) -> trans e1 @ [Sm5.MALLOC; Sm5.BIND id; Sm5.PUSH (Sm5.Id id); Sm5.STORE] @ trans e2 @ [Sm5.UNBIND; Sm5.POP]
