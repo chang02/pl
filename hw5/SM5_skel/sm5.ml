@@ -240,7 +240,7 @@ struct
 
       List.iter mark_one_svalue s;
       List.iter mark_one_evalue e;
-      let (c, env) = k in List.iter mark_one_evalue env;
+      List.iter mark_one_evalue (snd (List.split k));
 
       let new_m = List.filter (fun (l, _) -> List.mem l !reachable_locs) m in
       if List.length new_m < mem_limit then
