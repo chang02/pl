@@ -208,16 +208,16 @@ struct
     if List.length m < mem_limit then
       let _ = loc_id := !loc_id + 1 in
       ((!loc_id, 0), m)
-    (* else
+    else
       let _ = reachable_locs := [] in
       (* TODO : Add the code that marks the reachable locations.
        * let _ = ... 
        *)
 
       let rec mark_one_loc loc =
-      if List.mem loc !reachable_locs then ()
-      else (reachable_locs := !reachable_locs @ [loc];
-        mark_one_value (load loc m))
+        if List.mem loc !reachable_locs then ()
+        else (reachable_locs := !reachable_locs @ [loc];
+          mark_one_value (load loc m))
       and mark_one_value v =
         match v with
         | L l -> mark_one_loc l
@@ -237,60 +237,13 @@ struct
         | P (s,c,e) -> List.iter mark_one_evalue e
         | M ev -> mark_one_evalue ev
       in
+      let mark_one_k kv =
+        let (c, ev) = kv in
+        List.iter mark_one_evalue en
 
       List.iter mark_one_svalue s;
       List.iter mark_one_evalue e;
-      List.iter mark_one_evalue (snd (List.split k)); *)
-      else
-      let _ = reachable_locs := [] in
-      
-      let rec mark_value (v: value) = 
-        match v with 
-        | L l -> mark_loc l
-        | R r -> List.iter mark_loc (snd (List.split r))
-        | _ -> ()
-      and mark_loc (l: loc) = 
-        reachable_locs := !reachable_locs @ [l]; mark_value (load l m) 
-      in
-      
-      let rec mark_env (en: environment) =
-      begin
-        let rec mark_env2 ((_, e2): string * evalue) = 
-        begin
-          match e2 with 
-          | Loc l -> mark_loc l
-          | Proc (_, _, e1) -> mark_env e1
-        end in
-        List.iter mark_env2 en 
-      end in
-
-      let rec mark_stack (sl: svalue list) = 
-      begin
-        let rec mark_stack2 (sv: svalue) = 
-        begin  
-          match sv with
-          | V v -> mark_value v; 
-          | P (_, _, e1) -> mark_env e1; 
-          | M e1 -> mark_env [e1];
-        end in
-        List.iter mark_stack2 sl 
-      end in
-
-      let rec mark_continue (kl: continuation) = 
-      begin 
-        let rec mark_continue2 ((_, ev): command * environment) = mark_env ev in
-        List.iter mark_continue2 kl
-      end in
-
-      let rec check_mem (ll: loc) (t: loc list) = 
-      begin 
-        if t == [] then false 
-        else( (fst (List.hd t) == fst ll) || check_mem ll (List.tl t) )
-      end in 
-
-      mark_stack s; mark_env e; mark_continue k;
-
-
+      List.iter mark_one_k k;
 
       let new_m = List.filter (fun (l, _) -> List.mem l !reachable_locs) m in
       if List.length new_m < mem_limit then
