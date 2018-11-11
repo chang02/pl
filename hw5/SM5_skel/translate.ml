@@ -45,7 +45,11 @@ module Translator = struct
                 ))
             )
         )
-    | K.LETV (id, e1, e2) -> trans e1 @ [Sm5.MALLOC; Sm5.BIND id; Sm5.PUSH (Sm5.Id id); Sm5.STORE] @ trans e2 @ [Sm5.UNBIND; Sm5.POP]
+    | K.LETV (id, e1, e2) ->
+        trans e1 @
+        [Sm5.MALLOC] @ [Sm5.BIND id] @ [Sm5.PUSH (Sm5.Id id)] @ [Sm5.STORE] @
+        trans e2 @
+        [Sm5.UNBIND] @ [Sm5.POP]
     | K.LETF (id1, id2, e1, e2) ->
         [Sm5.PUSH (Sm5.Fn (id2, [Sm5.BIND id1] @ trans e1 @ [Sm5.UNBIND] @ [Sm5.POP]))] @
         [Sm5.BIND id1] @

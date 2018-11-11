@@ -215,6 +215,8 @@ struct
       (* TODO : Add the code that marks the reachable locations.
        * let _ = ... 
       *)
+
+      
       let rec mark_value (v: value) = 
         match v with 
         | L l -> mark_loc l
@@ -260,6 +262,8 @@ struct
       end in 
 
       mark_stack s; mark_env e; mark_continue k;
+
+
  
       let new_m = List.filter (fun (l, _) -> check_mem l !reachable_locs) m in
       if List.length new_m < mem_limit then

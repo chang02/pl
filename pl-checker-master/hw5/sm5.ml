@@ -1,7 +1,6 @@
 (*
  * SNU 4190.310 Programming Languages 
- * Homework "SM5 Garbage Collector" Solution
- * DongKwon Lee (dklee@ropas.snu.ac.kr)
+ * Homework "SM5 Garbage Collector"
  *)
 
 module type SM5 = 
@@ -214,6 +213,34 @@ struct
       (* TODO : Add the code that marks the reachable locations.
        * let _ = ... 
        *)
+
+      let rec mark_one_loc loc =
+      if List.mem loc !reachable_locs then ()
+      else (reachable_locs := !reachable_locs @ [loc];
+        mark_one_value (load loc m))
+      and mark_one_value v =
+        | L l -> mark_one_loc l
+        | R r -> List.iter mark_one_loc (snd (List.split r))
+        | _ -> ()
+      in
+
+      let rec mark_one_evalue eval =
+        let (s, ev) = eval in
+        match ev with
+        | Loc l -> mark_one_loc l
+        | Proc (s,c,e) -> List.iter mark_one_evalue e
+      in
+      let mark_one_svalue sv = 
+        match sv with
+        | V v -> mark_one_value v
+        | P (s,c,e) -> List.iter mark_one_evalue e
+        | M ev -> mark_one_evalue ev
+      in
+
+      List.iter mark_one_svalue s;
+      List.iter mark_one_evalue e;
+      let (c, env) = k in List.iter mark_one_evalue env;
+
       let new_m = List.filter (fun (l, _) -> List.mem l !reachable_locs) m in
       if List.length new_m < mem_limit then
         let _ = loc_id := !loc_id + 1 in
