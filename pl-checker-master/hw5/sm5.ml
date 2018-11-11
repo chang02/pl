@@ -240,6 +240,7 @@ struct
       let mark_one_k kv =
         let (c, ev) = kv in
         List.iter mark_one_evalue en
+      in
 
       List.iter mark_one_svalue s;
       List.iter mark_one_evalue e;
