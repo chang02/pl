@@ -67,10 +67,13 @@ module Translator = struct
         [Sm5.CALL]
     | K.READ x -> [Sm5.GET] @ [Sm5.PUSH (Sm5.Id x)] @ [Sm5.STORE] @ [Sm5.PUSH (Sm5.Id x)] @ [Sm5.LOAD]
     | K.WRITE e ->
-        trans e @ [Sm5.MALLOC] @ [Sm5.BIND "@w@"] @
-        [Sm5.PUSH (Sm5.Id "@w@")] @ [Sm5.STORE] @
-        [Sm5.PUSH (Sm5.Id "@w@")] @ [Sm5.LOAD] @ [Sm5.PUT] @
-        [Sm5.PUSH (Sm5.Id "@w@")] @ [Sm5.LOAD] @ [Sm5.UNBIND] @ [Sm5.POP]
+        let x = trans e in
+        (
+            x @ [Sm5.MALLOC] @ [Sm5.BIND "@w@"] @
+            [Sm5.PUSH (Sm5.Id "@w@")] @ [Sm5.STORE] @
+            x @ [Sm5.PUT] @
+            x @ [Sm5.UNBIND] @ [Sm5.POP]
+        )
 
     | _ -> failwith "Unimplemented"
 end
