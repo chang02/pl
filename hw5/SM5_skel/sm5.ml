@@ -219,6 +219,7 @@ struct
       else (reachable_locs := !reachable_locs @ [loc];
         mark_one_value (load loc m))
       and mark_one_value v =
+        match v with
         | L l -> mark_one_loc l
         | R r -> List.iter mark_one_loc (snd (List.split r))
         | _ -> ()
