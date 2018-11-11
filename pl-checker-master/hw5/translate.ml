@@ -54,26 +54,23 @@ module Translator = struct
         [Sm5.POP] 
     | K.CALLV(id, e) -> 
         [Sm5.PUSH (Sm5.Id id)] @
-        [Sm5.PUSH (Sm5.Id id)] @
         trans e @
         [Sm5.MALLOC] @
-        [Sm5.CALL]
+        [Sm5.CALL] @
+        [Sm5.PUSH (Sm5.Id id)]
     | K.CALLR (id1, id2) -> 
-        [Sm5.PUSH (Sm5.Id id1)] @
         [Sm5.PUSH (Sm5.Id id1)] @
         [Sm5.PUSH (Sm5.Id id2)] @
         [Sm5.LOAD] @
         [Sm5.PUSH (Sm5.Id id2)] @
-        [Sm5.CALL]
+        [Sm5.CALL] @
+        [Sm5.PUSH (Sm5.Id id1)]
     | K.READ x -> [Sm5.GET] @ [Sm5.PUSH (Sm5.Id x)] @ [Sm5.STORE] @ [Sm5.PUSH (Sm5.Id x)] @ [Sm5.LOAD]
     | K.WRITE e ->
-        let x = trans e in
-        (
-            x @ [Sm5.MALLOC] @ [Sm5.BIND "@w@"] @
-            [Sm5.PUSH (Sm5.Id "@w@")] @ [Sm5.STORE] @
-            x @ [Sm5.PUT] @
-            x @ [Sm5.UNBIND] @ [Sm5.POP]
-        )
+        trans e @ [Sm5.MALLOC] @ [Sm5.BIND "@w@"] @
+        [Sm5.PUSH (Sm5.Id "@w@")] @ [Sm5.STORE] @
+        [Sm5.PUSH (Sm5.Id "@w@")] @ [Sm5.LOAD] @ [Sm5.PUT] @
+        [Sm5.PUSH (Sm5.Id "@w@")] @ [Sm5.LOAD] @ [Sm5.UNBIND] @ [Sm5.POP]
 
     | _ -> failwith "Unimplemented"
 end
