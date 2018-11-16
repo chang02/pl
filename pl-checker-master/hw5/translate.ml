@@ -37,13 +37,21 @@ module Translator = struct
     | K.FOR (id, e1, e2, e3) ->
         (
             let tvar = "$t" in
-            trans (
+            let fvar = "$f" in
+            (* trans (
                 K.LETV (tvar, K.ADD (e2, K.NUM 1), K.LETV (id, e1, 
                     K.WHILE (K.LESS (K.VAR id, K.VAR tvar),
                         K.SEQ (e3, K.ASSIGN (id, K.ADD (K.VAR id, K.NUM 1)))
                     )
                 ))
-            )
+            ) *)
+            let loop =
+            K.WHILE
+              (K.NOT (K.LESS (K.VAR tvar, K.VAR fvar)),
+              K.SEQ
+                (K.ASSIGN (x, K.VAR fvar),
+                K.SEQ (e3, K.ASSIGN (fvar, K.ADD (K.VAR fvar, K.NUM 1))))) in
+          trans (K.LETV (fvar, e1, K.LETV (tvar, e2, loop)))
         )
     | K.LETV (id, e1, e2) ->
         trans e1 @
@@ -51,11 +59,9 @@ module Translator = struct
         trans e2 @
         [Sm5.UNBIND] @ [Sm5.POP]
     | K.LETF (id1, id2, e1, e2) ->
-        [Sm5.PUSH (Sm5.Fn (id2, [Sm5.BIND id1] @ trans e1))] @
-        [Sm5.BIND id1] @
+        [Sm5.PUSH (Sm5.Fn (id2, [Sm5.BIND id1] @ trans e1))] @ [Sm5.BIND id1] @
         trans e2 @
-        [Sm5.UNBIND] @
-        [Sm5.POP] 
+        [Sm5.UNBIND] @ [Sm5.POP] 
     | K.CALLV(id, e) -> 
         [Sm5.PUSH (Sm5.Id id)] @
         [Sm5.PUSH (Sm5.Id id)] @
