@@ -36,23 +36,14 @@ module Translator = struct
         )
     | K.FOR (id, e1, e2, e3) ->
         (
-            let fvar = "$f" in
             let tvar = "$t" in
-            (* trans (
-                K.LETV (fvar, e1, K.LETV (tvar, K.ADD (e2, K.NUM 1), 
-                    K.WHILE (K.LESS (K.VAR fvar, K.VAR tvar),
-                        K.SEQ( K.ASSIGN (id, K.VAR fvar),
-                            K.SEQ (e3, K.ASSIGN (fvar, K.ADD (K.VAR fvar, K.NUM 1))))
+            trans (
+                K.LETV (tvar, K.ADD (e2, K.NUM 1), K.LETV (id, e1, 
+                    K.WHILE (K.LESS (K.VAR id, K.VAR tvar),
+                        K.SEQ (e3, K.ASSIGN (id, K.ADD (K.VAR id, K.NUM 1)))
                     )
                 ))
-            ) *)
-            let loop =
-            K.WHILE
-              (K.NOT (K.LESS (K.VAR tvar, K.VAR fvar)),
-              K.SEQ
-                (K.ASSIGN (id, K.VAR fvar),
-                K.SEQ (e3, K.ASSIGN (fvar, K.ADD (K.VAR fvar, K.NUM 1))))) in
-            trans (K.LETV (fvar, e1, K.LETV (tvar, e2, loop)))
+            )
         )
     | K.LETV (id, e1, e2) ->
         trans e1 @
