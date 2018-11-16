@@ -36,8 +36,8 @@ module Translator = struct
         )
     | K.FOR (id, e1, e2, e3) ->
         (
-            let fvar = "$f" in
-            let tvar = "$t" in
+            let fvar = "$fr" in
+            let tvar = "$to" in
             trans (
                 K.LETV (fvar, e1, K.LETV (tvar, K.ADD (e2, K.NUM 1), 
                     K.WHILE (K.LESS (K.VAR fvar, K.VAR tvar),
