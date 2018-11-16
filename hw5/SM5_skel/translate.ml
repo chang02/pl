@@ -51,7 +51,7 @@ module Translator = struct
         trans e2 @
         [Sm5.UNBIND] @ [Sm5.POP]
     | K.LETF (id1, id2, e1, e2) ->
-        [Sm5.PUSH (Sm5.Fn (id2, [Sm5.BIND id1] @ trans e1))] @ [Sm5.BIND id1] @
+        [Sm5.PUSH (Sm5.Fn (id2, [Sm5.BIND id1] @ trans e1)); Sm5.BIND id1] @
         [Sm5.BIND id1] @
         trans e2 @
         [Sm5.UNBIND] @
