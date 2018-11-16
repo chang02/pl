@@ -33,7 +33,7 @@ module Translator = struct
             let vname = "$v" in
             let func = K.IF (K.VAR vname, K.SEQ (e1, K.CALLV (fname, e)), K.UNIT) in
             (* let func = K.IF (e, K.SEQ (e1, K.CALLV (fname, K.UNIT)), K.UNIT) in *)
-            trans (K.LETF(fname, vname, func, K.CALLV (fname, K.UNIT)))
+            trans (K.LETF(fname, vname, func, K.CALLV (fname, e)))
         )
     | K.FOR (id, e1, e2, e3) ->
         (
