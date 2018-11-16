@@ -218,11 +218,14 @@ struct
         if List.mem loc !reachable_locs then ()
         else (reachable_locs := !reachable_locs @ [loc];
           mark_one_value (load loc m))
-        
+
+      and mark_loc_list locl = 
+        List.iter mark_one_loc locl
+
       and mark_one_value v =
         match v with
         | L l -> mark_one_loc l
-        | R r -> List.iter mark_one_loc (snd (List.split r))
+        | R r -> mark_loc_list (snd (List.split r))
         | _ -> ()
       in
 
@@ -232,20 +235,31 @@ struct
         | Loc l -> mark_one_loc l
         | Proc (s,c,e) -> List.iter mark_one_evalue e
       in
+      let rec mark_evalue_list evall =
+        List.iter mark_one_evalue evall
+      in
+
       let mark_one_svalue sv = 
         match sv with
         | V v -> mark_one_value v
         | P (s,c,e) -> List.iter mark_one_evalue e
         | M ev -> mark_one_evalue ev
       in
+      let rec mark_svalue_list svall =
+        List.iter mark_one_svalue svall
+      in
+
       let mark_one_k kv =
         let (c, ev) = kv in
         List.iter mark_one_evalue ev
       in
+      let rec mark_k_list kvl =
+        List.iter mark_one_k kvl
+      in
 
-      List.iter mark_one_svalue s;
-      List.iter mark_one_evalue e;
-      List.iter mark_one_k k;
+      mark_svalue_list s;
+      mark_evalue_list e;
+      mark_k_list k;
 
       let new_m = List.filter (fun (l, _) -> List.mem l !reachable_locs) m in
       if List.length new_m < mem_limit then
