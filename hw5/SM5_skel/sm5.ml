@@ -218,6 +218,7 @@ struct
         if List.mem loc !reachable_locs then ()
         else (reachable_locs := !reachable_locs @ [loc];
           mark_one_value (load loc m))
+        
       and mark_one_value v =
         match v with
         | L l -> mark_one_loc l
