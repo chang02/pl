@@ -49,7 +49,7 @@ module Translator = struct
             K.WHILE
               (K.NOT (K.LESS (K.VAR tvar, K.VAR fvar)),
               K.SEQ
-                (K.ASSIGN (x, K.VAR fvar),
+                (K.ASSIGN (id, K.VAR fvar),
                 K.SEQ (e3, K.ASSIGN (fvar, K.ADD (K.VAR fvar, K.NUM 1))))) in
           trans (K.LETV (fvar, e1, K.LETV (tvar, e2, loop)))
         )
