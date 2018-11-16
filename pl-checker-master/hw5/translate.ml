@@ -27,7 +27,7 @@ module Translator = struct
     | K.ASSIGN (id, e) -> trans e @ [Sm5.PUSH (Sm5.Id id)] @ [Sm5.STORE] @ [Sm5.PUSH (Sm5.Id id)] @ [Sm5.LOAD]
     | K.SEQ (e1, e2) -> trans e1 @ [Sm5.POP] @ trans e2
     | K.IF (e1, e2, e3) -> trans e1 @ [Sm5.JTR(trans e2, trans e3)]
-    (* | K.WHILE (e, e1) -> 
+    | K.WHILE (e, e1) -> 
         (
             let fname = "$f" in
             let vname = "$v" in
@@ -44,22 +44,7 @@ module Translator = struct
                     )
                 ))
             )
-        ) *)
-    | K.WHILE (e1, e2) ->
-        let fname = "$f" in
-        let vname = "$v" in
-          let f = K.IF (K.VAR vname, K.SEQ (e2, K.CALLV (fname, e1)), K.UNIT) in
-          trans (K.LETF (fname, vname, f, K.CALLV (fname, e1)))
-    | K.FOR (x, e1, e2, e3) ->
-        let fvar = "$f" in
-        let tvar = "$t" in
-      let loop =
-        K.WHILE
-          (K.NOT (K.LESS (K.VAR tvar, K.VAR fvar)),
-          K.SEQ
-            (K.ASSIGN (x, K.VAR fvar),
-            K.SEQ (e3, K.ASSIGN (fvar, K.ADD (K.VAR fvar, K.NUM 1))))) in
-      trans (K.LETV (fvar, e1, K.LETV (tvar, e2, loop)))
+        )
     | K.LETV (id, e1, e2) ->
         trans e1 @
         [Sm5.MALLOC] @ [Sm5.BIND id] @ [Sm5.PUSH (Sm5.Id id)] @ [Sm5.STORE] @
