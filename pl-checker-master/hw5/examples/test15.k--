@@ -1,5 +1,0 @@
-(* test case 15 : K.ASSIGN *)
-
-let x := 0 in
-write(x := 123);
-write(x)
