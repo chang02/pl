@@ -36,21 +36,21 @@ and trans' : Sm5.command -> Sonata.command = function
   | Sm5.GET ::cmds -> Sonata.GET :: (trans' cmds)
   | Sm5.PUT ::cmds -> Sonata.PUT :: (trans' cmds)
   | Sm5.CALL :: cmds -> 
-    [Sonata.MALLOC] @ [Sonata.BIND "$loc"] @ [Sonata.PUSH (Sonata.Id "$loc")] @ [Sonata.STORE] @
+    (* [Sonata.MALLOC] @ [Sonata.BIND "$loc"] @ [Sonata.PUSH (Sonata.Id "$loc")] @ [Sonata.STORE] @
     [Sonata.MALLOC] @ [Sonata.BIND "$val"] @ [Sonata.PUSH (Sonata.Id "$val")] @ [Sonata.STORE] @
     [Sonata.MALLOC] @ [Sonata.BIND "$proc"] @ [Sonata.PUSH (Sonata.Id "$proc")] @ [Sonata.STORE] @
     [Sonata.PUSH (Sonata.Fn ("$tmp", trans' (Sm5.POP :: cmds)))] @ 
     [Sonata.PUSH (Sonata.Id "$proc")] @ [Sonata.LOAD] @
     [Sonata.PUSH (Sonata.Id "$val")] @ [Sonata.LOAD] @
     [Sonata.PUSH (Sonata.Id "$loc")] @ [Sonata.LOAD] @
-    [Sonata.CALL] @ (trans' cmds)
+    [Sonata.CALL] @ (trans' cmds) *)
 
-    (* [Sonata.BIND "$loc"; Sonata.PUSH (Sonata.Id "$loc"); Sonata.STORE] @ 
+    [Sonata.BIND "$loc"; Sonata.PUSH (Sonata.Id "$loc"); Sonata.STORE] @ 
     [Sonata.MALLOC; Sonata.BIND "$proc"; Sonata.PUSH (Sonata.Id "$proc"); Sonata.STORE] @
     [Sonata.PUSH (Sonata.Fn ("n@xt", trans' (Sm5.POP ::cmds)))] @
     [Sonata.PUSH (Sonata.Id "$proc"); Sonata.LOAD; Sonata.UNBIND; Sonata.POP] @
     [Sonata.PUSH (Sonata.Id "$loc"); Sonata.LOAD] @
-    [Sonata.PUSH (Sonata.Id "$loc"); Sonata.UNBIND; Sonata.POP] @ [Sonata.CALL] *)
+    [Sonata.PUSH (Sonata.Id "$loc"); Sonata.UNBIND; Sonata.POP] @ [Sonata.CALL]
   | Sm5.ADD :: cmds -> Sonata.ADD :: (trans' cmds)
   | Sm5.SUB :: cmds -> Sonata.SUB :: (trans' cmds)
   | Sm5.MUL :: cmds -> Sonata.MUL :: (trans' cmds)
