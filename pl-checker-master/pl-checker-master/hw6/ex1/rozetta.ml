@@ -14,12 +14,12 @@ let trans_v : Sm5.value -> Sonata.value = function
 let rec trans_obj : Sm5.obj -> Sonata.obj = function
   | Sm5.Val v -> Sonata.Val (trans_v v)
   | Sm5.Id id -> Sonata.Id id
-  | Sm5.Fn (arg, command) -> Sonata.Fn (arg, trans' ([Sm5.BIND "last!"] @ command @ [Sm5.PUSH (Sm5.Id "last!"); Sm5.PUSH (Sm5.Val (Sm5.Z 0)); Sm5.MALLOC; Sm5.CALL]))
-    (* let tmp = "$fn" in
+  | Sm5.Fn (arg, command) ->
+    let tmp = "$fn" in
     let body = [Sonata.MALLOC] @ [Sonata.BIND tmp] @ [Sonata.PUSH (Sonata.Id tmp)] @ [Sonata.STORE] @ 
                 (trans' command) @ [Sonata.PUSH (Sonata.Id tmp)] @ [Sonata.LOAD] @
                 trans' ([Sm5.PUSH (Sm5.Val Sm5.Unit)] @ [Sm5.PUSH (Sm5.Id tmp)] @ [Sm5.UNBIND] @ [Sm5.POP] @ [Sm5.CALL]) in
-    Sonata.Fn (arg, body) *)
+    Sonata.Fn (arg, body)
 
 (* TODO : complete this function *)
 and trans' : Sm5.command -> Sonata.command = function
@@ -36,15 +36,6 @@ and trans' : Sm5.command -> Sonata.command = function
   | Sm5.GET ::cmds -> Sonata.GET :: (trans' cmds)
   | Sm5.PUT ::cmds -> Sonata.PUT :: (trans' cmds)
   | Sm5.CALL :: cmds -> 
-    (* [Sonata.MALLOC] @ [Sonata.BIND "$loc"] @ [Sonata.PUSH (Sonata.Id "$loc")] @ [Sonata.STORE] @
-    [Sonata.MALLOC] @ [Sonata.BIND "$val"] @ [Sonata.PUSH (Sonata.Id "$val")] @ [Sonata.STORE] @
-    [Sonata.MALLOC] @ [Sonata.BIND "$proc"] @ [Sonata.PUSH (Sonata.Id "$proc")] @ [Sonata.STORE] @
-    [Sonata.PUSH (Sonata.Fn ("$tmp", trans' (Sm5.POP :: cmds)))] @ 
-    [Sonata.PUSH (Sonata.Id "$proc")] @ [Sonata.LOAD] @
-    [Sonata.PUSH (Sonata.Id "$val")] @ [Sonata.LOAD] @
-    [Sonata.PUSH (Sonata.Id "$loc")] @ [Sonata.LOAD] @
-    [Sonata.CALL] @ (trans' cmds) *)
-
     [Sonata.BIND "$loc"; Sonata.PUSH (Sonata.Id "$loc"); Sonata.STORE] @ 
     [Sonata.MALLOC; Sonata.BIND "$proc"; Sonata.PUSH (Sonata.Id "$proc"); Sonata.STORE] @
     [Sonata.PUSH (Sonata.Fn ("n@xt", trans' (Sm5.POP ::cmds)))] @
