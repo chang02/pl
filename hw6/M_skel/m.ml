@@ -184,9 +184,11 @@ struct
       let (l, m'') = malloc m' in
       (Loc l, store m'' (l, v))
     | ASSIGN (e1, e2) ->
-      let (l, m') = eval env mem e1 in
-      let (v, m'') = eval env m' e2 in
-      (v, store m'' (l', v))
+      let (v1, m') = eval env mem e1 in
+      let l = getLoc v1 in
+      let (v2, m'') = eval env m' e2 in
+      let m = store m'' (l, v2)) in
+      (v2, m)
     | BANG e ->
         let (v, m') = eval env mem e in
         (load m' (getLoc v), m')
