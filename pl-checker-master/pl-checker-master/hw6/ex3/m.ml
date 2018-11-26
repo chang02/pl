@@ -161,7 +161,11 @@ struct
     | LET (d, e) ->
       (match d with
       | VAL (x, e1) -> let (v1, m') = eval env mem e1 in eval(env @+ (x, v1)) m' e2
-      | Rec (f, x, e1) -> let (v1, m') = eval env mem (FN (x, e1)) in let v = Closure (Rec Fun (f, x, el), env) in eval (env @+ (f, v)) m' e2)
+      | Rec (f, x, e1) -> 
+        let (v1, m') = eval env mem (FN (x, e1)) in
+        let v = Closure (Rec Fun (f, x, el), env) in 
+        eval (env @+ (f, v)) m' e2
+      )
     | IF (e1, e2, e3) ->
       let (v1, m') = eval env mem e1 in
       eval env m' (if getBool v1 then e2 else e3)
