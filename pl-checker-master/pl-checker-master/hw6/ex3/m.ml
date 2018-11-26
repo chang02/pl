@@ -156,8 +156,7 @@ struct
       let (c, env') = getClosure v1 in
       (match c with 
       | Fun (x, e) -> eval (env' @+ (x, v2)) m'' e
-      | RecFun (f, x, e) ->  (* TODO : implement this *)
-        failwith "Unimplemented")
+      | RecFun (f, x, e) -> eval ((env' @+ (x, v2)) @+ (f, v1)) m'' e)
     | LET (d, e) ->
       (match d with
       | VAL (x, e1) -> let (v1, m') = eval env mem e1 in eval(env @+ (x, v1)) m' e2
@@ -204,7 +203,6 @@ struct
     | SND e -> 
       let (v, m') = eval env mem e in
       (snd (getPair v), m')
-    (* TODO : complete the rest of interpreter *)
 
   let emptyEnv = (fun x -> raise (RunError ("unbound id: " ^ x)))
 
