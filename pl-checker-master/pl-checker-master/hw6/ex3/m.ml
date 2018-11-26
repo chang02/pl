@@ -139,7 +139,7 @@ struct
       | (String l, String r) -> Bool (l = r)
       | (Bool l, Bool r) -> Bool (l = r)
       | (Loc l, Loc r) -> Bool (l = r)
-      | _ -> raise (TypeError "typeerror in eq")
+      | _ -> raise (TypeError "type mismatch")
     )
 
   let rec printValue =
@@ -197,7 +197,8 @@ struct
       (v2, m)
     | BANG e ->
         let (v, m') = eval env mem e in
-        (load m' (getLoc v), m')
+        let l = getLoc v in
+        (load m' l, m')
     | SEQ (e1, e2) ->
         let (v1, m1) = eval env mem e1 in
         eval env m1 e2
