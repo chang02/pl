@@ -159,11 +159,11 @@ struct
       | RecFun (f, x, e) -> eval ((env' @+ (x, v2)) @+ (f, v1)) m'' e)
     | LET (d, e) ->
       (match d with
-      | VAL (x, e1) -> let (v1, m') = eval env mem e1 in eval(env @+ (x, v1)) m' e2
+      | VAL (x, e1) -> let (v1, m') = eval env mem e1 in eval(env @+ (x, v1)) m' e
       | REC (f, x, e1) -> 
         let (v1, m') = eval env mem (FN (x, e1)) in
         let v = Closure (RecFun (f, x, el), env) in 
-        eval (env @+ (f, v)) m' e2
+        eval (env @+ (f, v)) m' e
       )
     | IF (e1, e2, e3) ->
       let (v1, m') = eval env mem e1 in
