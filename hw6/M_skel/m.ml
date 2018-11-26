@@ -187,7 +187,7 @@ struct
       let (v1, m') = eval env mem e1 in
       let l = getLoc v1 in
       let (v2, m'') = eval env m' e2 in
-      let m = store m'' (l, v2)) in
+      let m = store m'' (l, v2) in
       (v2, m)
     | BANG e ->
         let (v, m') = eval env mem e in
