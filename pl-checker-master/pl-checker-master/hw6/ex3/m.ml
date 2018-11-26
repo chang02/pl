@@ -133,8 +133,13 @@ struct
     | SUB -> (fun (v1,v2) -> Int (getInt v1 - getInt v2))
     | AND -> (fun (v1,v2) -> Bool (getBool v1 && getBool v2))
     | OR ->  (fun (v1,v2) -> Bool (getBool v1 || getBool v2))
-    | EQ -> (* TODO : implement this *)
-      failwith "Unimplemented"
+    | EQ ->
+      match v1, v2 with
+      | (Int l, Int r) -> Bool (l = r)
+      | (String l, String r) -> Bool (l = r)
+      | (Bool l, Bool r) -> Bool (l = r)
+      | (Loc l, Loc r) -> Bool (l = r)
+      | _ -> raise (TypeError "typeerror in eq")
 
   let rec printValue =
     function 
