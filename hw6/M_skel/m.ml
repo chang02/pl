@@ -160,7 +160,7 @@ struct
     | LET (d, e) ->
       (match d with
       | VAL (x, e1) -> let (v1, m') = eval env mem e1 in eval(env @+ (x, v1)) m' e2
-      | Rec (f, x, e1) -> 
+      | REC (f, x, e1) -> 
         let (v1, m') = eval env mem (FN (x, e1)) in
         let v = Closure (RecFun (f, x, el), env) in 
         eval (env @+ (f, v)) m' e2
