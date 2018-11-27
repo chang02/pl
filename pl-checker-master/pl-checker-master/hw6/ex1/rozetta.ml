@@ -40,16 +40,13 @@ and trans' : Sm5.command -> Sonata.command = function
       [Sonata.PUSH (Sonata.Id "$val")] @ [Sonata.UNBIND] @ [Sonata.POP] @
       [Sonata.PUSH (Sonata.Id "$loc")] @ [Sonata.UNBIND] @ [Sonata.POP] @
       [Sonata.CALL] *)
-      [Sonata.BIND "$loc"] @
-      [Sonata.PUSH (Sonata.Id "$val"); Sonata.STORE] @
-      [Sonata.BIND "$proc"] @
-      (* 2.  Return Address를 함수로 만들어서 스택에 push *)
-      [Sonata.PUSH (Sonata.Fn ("$temp", trans' cmds))] @
-      (* 3.  어딘가에 저장했던 CALL의 파라미터를 다시 복구 *)
-      [Sonata.PUSH (Sonata.Id "$proc"); Sonata.UNBIND; Sonata.POP] @
-      [Sonata.PUSH (Sonata.Id "$val"); Sonata.LOAD] @
-      [Sonata.PUSH (Sonata.Id "$loc"); Sonata.UNBIND; Sonata.POP] @
-      [Sonata.CALL]
+      let bd = [Sonata.MALLOC ; Sonata.BIND "@l@" ; Sonata.PUSH (Sonata.Id "@l@") ; Sonata.STORE] @ 
+               [Sonata.MALLOC ; Sonata.BIND "@v@" ; Sonata.PUSH (Sonata.Id "@v@") ; Sonata.STORE] @
+               [Sonata.MALLOC ; Sonata.BIND "@f@" ; Sonata.PUSH (Sonata.Id "@f@") ; Sonata.STORE] in 
+      let pl = [Sonata.PUSH (Sonata.Id "@f@") ; Sonata.LOAD] @ 
+               [Sonata.PUSH (Sonata.Id "@v@") ; Sonata.LOAD] @ 
+               [Sonata.PUSH (Sonata.Id "@l@") ; Sonata.LOAD] in     
+      bd @ [Sonata.PUSH (Sonata.Fn ("@temp@", trans' (Sm5.POP :: cmds)))] @ pl @ [Sonata.CALL]
     (* [Sonata.BIND "$loc"; Sonata.PUSH (Sonata.Id "$loc"); Sonata.STORE] @ 
     [Sonata.MALLOC; Sonata.BIND "$proc"; Sonata.PUSH (Sonata.Id "$proc"); Sonata.STORE] @
     [Sonata.PUSH (Sonata.Fn ("n@xt", trans' (Sm5.POP ::cmds)))] @
