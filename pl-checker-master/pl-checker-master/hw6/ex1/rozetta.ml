@@ -48,7 +48,7 @@ and trans' : Sm5.command -> Sonata.command = function
       (* 3.  어딘가에 저장했던 CALL의 파라미터를 다시 복구 *)
       [Sonata.PUSH (Sonata.Id "$proc"); Sonata.UNBIND; Sonata.POP] @
       [Sonata.PUSH (Sonata.Id "$val"); Sonata.LOAD] @
-      [Sonata.PUSH (Sonata.Id tmp); Sonata.UNBIND; Sonata.POP] @
+      [Sonata.PUSH (Sonata.Id "$loc"); Sonata.UNBIND; Sonata.POP] @
       [Sonata.CALL]
     (* [Sonata.BIND "$loc"; Sonata.PUSH (Sonata.Id "$loc"); Sonata.STORE] @ 
     [Sonata.MALLOC; Sonata.BIND "$proc"; Sonata.PUSH (Sonata.Id "$proc"); Sonata.STORE] @
