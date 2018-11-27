@@ -35,7 +35,7 @@ and trans' : Sm5.command -> Sonata.command = function
   | Sm5.PUT ::cmds -> Sonata.PUT :: (trans' cmds)
   | Sm5.CALL :: cmds -> 
       [Sonata.BIND "$loc"] @ [Sonata.BIND "$val"] @ [Sonata.BIND "$proc"] @
-      [Sonata.PUSH (Sonata.Fn ("$temp", trans' (Sm5.POP :: cmds)))] @
+      [Sonata.PUSH (Sonata.Fn ("$temp", trans' cmds))] @
       [Sonata.PUSH (Sonata.Id "$proc")] @ [Sonata.UNBIND] @ [Sonata.POP] @
       [Sonata.PUSH (Sonata.Id "$val")] @ [Sonata.UNBIND] @ [Sonata.POP] @
       [Sonata.PUSH (Sonata.Id "$loc")] @ [Sonata.UNBIND] @ [Sonata.POP] @
