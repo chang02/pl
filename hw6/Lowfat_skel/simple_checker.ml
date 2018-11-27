@@ -100,20 +100,20 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     then let t = List.assoc id env in (empty_subst, t)
     else raise (M.TypeError "Unbound variable")
   | M.FN (x, e) ->
-    let (s, t) = check1((x, TVar new_var ())::env, e) in
+    let (s, t) = check1((x, TVar (new_var ()))::env, e) in
     (s, TFun (s (TVar a), t))
   | M.APP (e1, e2) ->
     let (s, t) = check1 (env, e1) in
     let (s', t') = check1 (subst_env s env, e2) in
     let s'' = unify (s' t) (TFun (t', TVar a)) in
-    (s'' @@ s' @@ s, s'' (TVar new_var ()))
+    (s'' @@ s' @@ s, s'' (TVar (new_var ())))
   | M.LET (M.VAL (x, e), e') ->
     let (s, t) = check1 (env, e) in
     let (s', t') = check1 ((x, t)::(subst_env s env), e') in
     (s' @@ s, t')
   | M.LET (M.REC (f, x, e), e') ->
     let (s, t) = check1 ((f, TVar a)::env, M.FN (x, e)) in
-    let s' = unify (s (TVar new_var ())) t in
+    let s' = unify (s (TVar (new_var ()))) t in
     let (s'', t') = check1 ((f, s' t)::(subst_env s env), e') in
     (s'' @@ s' @@ s, t')
   | M.IF (e1, e2, e3) ->
@@ -141,14 +141,14 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
       let (s, t) = check1 (env, e1) in
       let (s', t') = check1 (subst_env s env, e2) in
       let s1 = unify (s' t) t' in
-      let s2 = unify (s1 t') (TEqual new_var () in
+      let s2 = unify (s1 t') (TEqual (new_var ()) in
       (s2 @@ s1 @@ s' @@ s, TBool)
     )
   | M.READ -> (empty_subst, TInt)
   | M.WRITE e ->
     let (s, t) = check1 (env, e) in
-    let s' = unify t (TPrint new_var ()) in
-    (s' @@ s, s' (TPrint new_var ()))
+    let s' = unify t (TPrint (new_var ())) in
+    (s' @@ s, s' (TPrint (new_var ())))
   | M.MALLOC e ->
     let (s, t) = check1 (env, e) in
     (s, TLoc t)
@@ -159,8 +159,8 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     (s'' @@ s' @@ s, s'' t')
   | M.BANG e ->
     let (s, t) = check1 (env, e) in
-    let s' = unify t (TLoc (TVar new_var ())) in
-    (s' @@ s, s' (TVar new_var ()))
+    let s' = unify t (TLoc (TVar (new_var ()))) in
+    (s' @@ s, s' (TVar (new_var ())))
   | M.SEQ (e1, e2) ->
     let (s, t) = check1 (env, e1) in
     let (s', t') = check1 (subst_env s env, e2) in
@@ -171,12 +171,12 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     (s' @@ s, TPair (s' t, t'))
   | M.FST e ->
     let (s, t) = check1 (env, e) in
-    let s' = unify t (TPair (TVar new_var (), TVar new_var())) in
-    (s' @@ s, s' (TVar new_var ()))
+    let s' = unify t (TPair (TVar (new_var ()), TVar (new_var()))) in
+    (s' @@ s, s' (TVar (new_var ())))
   | M.SND e ->
     let (s, t) = check1 (env, e) in
-    let s' = unify t (TPair (TVar new_var(), TVar new_var())) in
-    (s' @@ s, s' (TVar new_var()))
+    let s' = unify t (TPair (TVar (new_var()), TVar (new_var()))) in
+    (s' @@ s, s' (TVar (new_var())))
 
 
 let rec check2 : typ -> M.types = fun tp ->
