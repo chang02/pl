@@ -27,9 +27,7 @@ type typ =
   (* Modify, or add more if needed *)
 
 
-
-type typ_scheme = SimpleTyp of typ
-type typ_env = (M.id * typ_scheme) list
+type typ_env = (M.id * typ) list
 type subst = typ -> typ
 
 let empty_subst : subst = fun t -> t
@@ -42,13 +40,13 @@ let make_subst : var -> typ -> subst = fun x t ->
     | TPair (t1, t2) -> TPair (subs t1, subs t2)
     | TLoc t'' -> TLoc (subs t'')
     | TFun (t1, t2) -> TFun (subs t1, subs t2)
-    | _ -> t'
+    | TInt | TBool | TString -> t'
   in subs
 
 let (@@) s1 s2 = (fun t -> s1 (s2 t))
 
 let subst_env : subst -> typ_env -> typ_env = fun subs tyenv ->
-  List.map (fun (x, SimpleTyp t) -> (x, SimpleTyp (subs t))) tyenv
+  List.map (fun (x, t) -> (x, subs t)) tyenv
 
 
 let rec occurs : var -> typ -> bool = fun v t -> 
@@ -69,7 +67,8 @@ let rec unify : typ -> typ -> subst = fun t1 t2 ->
     | TLoc x, TLoc y -> unify x y
     | TPair(x, y), TPair(z, w) | TFun(x, y), TFun(z, w) ->
       let tmp = unify x z in
-      (unify (tmp y) (tmp w)) @@ tmp
+      let tmp2 = (unify (tmp y) (tmp w)) in
+      tmp2 @@ tmp
     | TEqual x, y | y, TEqual x -> 
       if (occurs x y) then raise (M.TypeError "Type Mismatch")
       else (
@@ -87,18 +86,22 @@ let rec unify : typ -> typ -> subst = fun t1 t2 ->
     | _ -> raise (M.TypeError "Type Mismatch")
   )
 
+let exist id env =
+  let (a, b) = List.split env in
+  if List.mem id a then true else false
+
 let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
   match exp with
   | M.CONST (M.S s) -> (empty_subst, TString)
   | M.CONST (M.N n) -> (empty_subst, TInt)
   | M.CONST (M.B b) -> (empty_subst, TBool)
   | M.VAR id ->
-    if (List.mem_assoc id env)
-    then let (SimpleTyp t) = List.assoc id env in (empty_subst, t)
+    if (exist id env)
+    then let t = List.assoc id env in (empty_subst, t)
     else raise (M.TypeError "Unbound variable")
   | M.FN (x, e) ->
     let a = new_var () in
-    let (s, t) = check1((x, SimpleTyp (TVar a))::env, e) in
+    let (s, t) = check1((x, TVar a)::env, e) in
     (s, TFun (s (TVar a), t))
   | M.APP (e1, e2) ->
     let a = new_var () in
@@ -112,9 +115,9 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     (s' @@ s, t')
   | M.LET (M.REC (f, x, e), e') ->
     let a = new_var () in
-    let (s, t) = check1 ((f, SimpleTyp (TVar a))::env, M.FN (x, e)) in
+    let (s, t) = check1 ((f, TVar a)::env, M.FN (x, e)) in
     let s' = unify (s (TVar a)) t in
-    let (s'', t') = check1 ((f, SimpleTyp (s' t))::(subst_env s env), e') in
+    let (s'', t') = check1 ((f, s' t)::(subst_env s env), e') in
     (s'' @@ s' @@ s, t')
   | M.IF (e1, e2, e3) ->
     let (s, t) = check1 (env, e1) in
