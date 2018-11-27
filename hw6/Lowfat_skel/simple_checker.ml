@@ -153,7 +153,7 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     if (List.mem_assoc id env)
     then let (SimpleTyp t) = List.assoc x env in (empty_subst, t)
     else raise (M.TypeError "Unbound variable")
-  | M.Fn (x, e) ->
+  | M.FN (x, e) ->
     let a = new_var () in
     let (s, t) = check1((x, SimpleTyp (TVar a))::env, e) in
     (s, TFun (s (TVar a), t))
