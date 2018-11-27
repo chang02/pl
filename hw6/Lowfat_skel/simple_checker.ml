@@ -102,8 +102,8 @@ let rec unify : typ -> typ -> subst = fun t1 t2 ->
     | _ -> raise (M.TypeError "Type Mismatch")
   )
 
-let rec check1 : M.exp -> typ = fun exp ->
-  let rec check1' : typ_env * M.exp -> (subst * typ) = fun(env, exp) ->
+let rec check1 : M.exp -> typ = fun e ->
+  let rec check1' : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     (match exp with
     | M.CONST (M.S s) -> (empty_subst, TString)
     | M.CONST (M.N n) -> (empty_subst, TInt)
@@ -205,7 +205,7 @@ let rec check1 : M.exp -> typ = fun exp ->
       (s' @@ s, s' v2)
     )
     in
-    check1' ([], exp)
+    check1' ([], e)
 
 let rec check2 : typ -> M.types = fun tp ->
   match tp with
