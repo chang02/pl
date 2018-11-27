@@ -203,34 +203,34 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     let s' = unify t (TPrint v) in
     (s' @@ s, s' (TPrint v))
   | M.MALLOC e ->
-    let (s, t) = sol (env, e) in
+    let (s, t) = check1 (env, e) in
     (s, TLoc t)
   | M.ASSIGN (e1, e2) ->
-    let (s, t) = sol (env, e1) in
-    let (s', t') = sol (subst_env s env, e2) in
+    let (s, t) = check1 (env, e1) in
+    let (s', t') = check1 (subst_env s env, e2) in
     let s'' = unify (s' t) (TLoc t') in
     (s'' @@ s' @@ s, s'' t')
   | M.BANG e ->
-    let (s, t) = sol (env, e) in
+    let (s, t) = check1 (env, e) in
     let v = new_var () in
     let s' = unify t (TLoc (TVar v)) in
     (s' @@ s, s' (TVar v))
   | M.SEQ (e1, e2) ->
-    let (s, t) = sol (env, e1) in
-    let (s', t') = sol (subst_env s env, e2) in
+    let (s, t) = check1 (env, e1) in
+    let (s', t') = check1 (subst_env s env, e2) in
     (s' @@ s, t')
   | M.PAIR (e1, e2) ->
-    let (s, t) = sol (env, e1) in
-    let (s', t') = sol (subst_env s env, e2) in
+    let (s, t) = check1 (env, e1) in
+    let (s', t') = check1 (subst_env s env, e2) in
     (s' @@ s, TPair (s' t, t'))
   | M.FST e ->
-    let (s, t) = sol (env, e) in
+    let (s, t) = check1 (env, e) in
     let v1 = new_var () in
     let v2 = new_var () in
     let s' = unify t (TPair (TVar v1, TVar v2)) in
     (s' @@ s, s' (TVar v1))
   | M.SND e ->
-    let (s, t) = sol (env, e) in
+    let (s, t) = check1 (env, e) in
     let v1 = new_var () in
     let v2 = new_var () in
     let s' = unify t (TPair (TVar v1, TVar v2)) in
