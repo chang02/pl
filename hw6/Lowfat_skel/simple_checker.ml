@@ -62,7 +62,7 @@ let make_subst : var -> typ -> subst = fun x t ->
     match t' with
     | TVar x'
     | TPrint x'
-    | TEqal x' -> if (x = x') then t else t'
+    | TEqual x' -> if (x = x') then t else t'
     | TPair (t1, t2) -> TPair (subs t1, subs t2)
     | TLoc t'' -> TLoc (subs t'')
     | TFun (t1, t2) -> TFun (subs t1, subs t2)
