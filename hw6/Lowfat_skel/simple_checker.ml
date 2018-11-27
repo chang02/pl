@@ -174,7 +174,7 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     let s' = unify (s (TVar beta)) t in
     let (s'', t') = check1 ((f, generalize (subst_env s env) (s' t))::(subst_env s env), e') in
     (s'' @@ s' @@ s, t')
-  | M.IF (e1, e2, e2) ->
+  | M.IF (e1, e2, e3) ->
     let (s, t) = check1 (env, e1) in
     let s' = unify t TBool in
     let (s1, t1) = check1 (subst_env (s' @@ s) env, e2) in
