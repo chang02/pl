@@ -29,25 +29,6 @@ type typ =
 type typ_scheme = SimpleTyp of typ
 type typ_env = (M.id * typ_scheme) list
 
-let union_ftv ftv_1 ftv_2 =
-  let ftv_1' = List.filter (fun v -> not (List.mem v ftv_2)) ftv_1 in
-  ftv_1' @ ftv_2
-
-let sub_ftv ftv_1 ftv_2 =
-  List.filter (fun v -> not (List.mem v ftv_2)) ftv_1
-
-let rec ftv_of_typ : typ -> var list = function
-  | TPair (t1, t2) -> union_ftv (ftv_of_typ t1) (ftv_of_typ t2)
-  | TLoc t -> ftv_of_typ t
-  | TFun (t1, t2) ->  union_ftv (ftv_of_typ t1) (ftv_of_typ t2)
-  | TVar v | TPrint v | TEqual v -> [v]
-  | _ -> []
-
-let ftv_of_env : typ_env -> var list = fun tyenv ->
-  List.fold_left
-    (fun acc_ftv (id, SimpleTyp t) -> union_ftv acc_ftv (ftv_of_typ t))
-    [] tyenv
-
 type subst = typ -> typ
 let empty_subst : subst = fun t -> t
 
@@ -76,38 +57,16 @@ let rec occurs : var -> typ -> bool = fun v t ->
   | TVar x | TEqual x | TPrint x -> (v = x)
   | _-> false
 
-let rec expansive : M.exp -> bool = fun e -> 
-  match e with
-  | M.CONST _ -> false
-  | M.VAR _ -> false
-  | M.FN _ -> false
-  | M.READ -> false  
-  | M.APP _ -> true
-  | M.MALLOC _ -> true  
-  | M.LET (M.VAL (x, e1), e2) -> expansive e1 || expansive e2
-  | M.LET (M.REC (f, x, e1), e2) -> expansive e1 || expansive e2
-  | M.IF (e1, e2, e3) -> expansive e1 || expansive e2 || expansive e3
-  | M.BOP (_, e1, e2) -> expansive e1 || expansive e2
-  | M.WRITE e1 -> expansive e1
-  | M.ASSIGN (e1, e2) -> expansive e1 || expansive e2
-  | M.BANG e1 -> expansive e1
-  | M.SEQ (e1, e2) -> expansive e1 || expansive e2
-  | M.PAIR (e1, e2) -> expansive e1 || expansive e2
-  | M.FST e1 -> expansive e1
-  | M.SND e1 -> expansive e1 
-
 let rec unify : typ -> typ -> subst = fun t1 t2 ->
   if t1 = t2 then empty_subst
   else (
     match t1, t2 with
-    | TVar x, y -> 
-      if (occurs x y) then raise (M.TypeError "Type Mismatch") else make_subst x y
-    | y, TVar x ->
+    | TVar x, y | y, TVar x-> 
       if (occurs x y) then raise (M.TypeError "Type Mismatch") else make_subst x y
     | TLoc x, TLoc y -> unify x y
     | TPair(x, y), TPair(z, w) | TFun(x, y), TFun(z, w) ->
-      let tmp_subst = unify x z in
-      (unify (tmp_subst y) (tmp_subst w)) @@ tmp_subst
+      let tmp = unify x z in
+      (unify (tmp y) (tmp w)) @@ tmp
     | TEqual x, y | y, TEqual x -> 
       if (occurs x y) then raise (M.TypeError "Type Mismatch")
       else (
@@ -146,9 +105,8 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     (s'' @@ s' @@ s, s'' (TVar a))
   | M.LET (M.VAL (x, e), e') ->
     let (s, t) = check1 (env, e) in
-    if expansive(e)
-    then let (s', t') = check1 ((x, SimpleTyp t)::(subst_env s env), e') in (s' @@ s, t')
-    else let (s', t') = check1 ((x, SimpleTyp t)::(subst_env s env), e') in (s' @@ s, t')
+    let (s', t') = check1 ((x, SimpleTyp t)::(subst_env s env), e') in
+    (s' @@ s, t')
   | M.LET (M.REC (f, x, e), e') ->
     let a = new_var () in
     let (s, t) = check1 ((f, SimpleTyp (TVar a))::env, M.FN (x, e)) in
