@@ -102,7 +102,7 @@ let rec unify : typ -> typ -> subst = fun t1 t2 ->
     | _ -> raise (M.TypeError "Type Mismatch")
   )
 
-let findById id env =
+let rec findById id env =
   match env with
   | [] -> raise (M.TypeError "Unbound variable")
   | hd::tl -> if (fst hd) = id then (snd hd) else findById id tl
