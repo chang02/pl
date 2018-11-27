@@ -41,7 +41,7 @@ and trans' : Sm5.command -> Sonata.command = function
       [Sonata.PUSH (Sonata.Id "$loc")] @ [Sonata.UNBIND] @ [Sonata.POP] @
       [Sonata.CALL] *)
       [Sonata.BIND "$loc"] @
-      [Sonata.PUSH (Sonata.Id "$val"); Sonata.STORE] @
+      [Sonata.MALLOC] @ [Sonata.BIND "$val"] @ [Sonata.PUSH (Sonata.Id "$val"); Sonata.STORE] @
       [Sonata.BIND "$proc"] @
       (* 2.  Return Address를 함수로 만들어서 스택에 push *)
       [Sonata.PUSH (Sonata.Fn ("$temp", trans' (Sm5.POP :: cmds)))] @
