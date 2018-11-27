@@ -66,14 +66,10 @@ let make_subst : var -> typ -> subst = fun x t ->
     | _ -> t'
   in subs
 
-let subst_scheme : subst -> typ_scheme -> typ_scheme = fun subs tyscm ->
-  match tyscm with
-  | SimpleTyp t -> SimpleTyp (subs t)
-
 let (@@) s1 s2 = (fun t -> s1 (s2 t))
 
 let subst_env : subst -> typ_env -> typ_env = fun subs tyenv ->
-  List.map (fun (x, tyscm) -> (x, subst_scheme subs tyscm)) tyenv
+  List.map (fun (x, tyscm) -> (x, SimpleTyp (subs tyscm)) tyenv
 
 let rec occurs : var -> typ -> bool = fun v t -> 
   match t with 
@@ -108,9 +104,9 @@ let rec unify : typ -> typ -> subst = fun t1 t2 ->
   begin
   match t1, t2 with
   | TVar x, y -> 
-    if (not (occurs x y)) then make_subst x y else raise (M.TypeError "Type Mismatch")
+    if (occurs x y) then raise (M.TypeError "Type Mismatch") else make_subst x y
   | y, TVar x ->
-    if (not (occurs x y)) then make_subst x y else raise (M.TypeError "Type Mismatch")
+    if (occurs x y) then raise (M.TypeError "Type Mismatch") else make_subst x y
   | TLoc x, TLoc y -> unify x y
   | TPair(w, x), TPair(y, z) ->
     let tmp_subst = unify w y in
