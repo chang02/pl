@@ -152,7 +152,7 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
   | M.WRITE e ->
     let (s, t) = check1 (env, e) in
     let v = TPrint (new_var ()) in
-    let s' = unify t (TPrint v) in
+    let s' = unify t v in
     (s' @@ s, s' v)
   | M.MALLOC e ->
     let (s, t) = check1 (env, e) in
