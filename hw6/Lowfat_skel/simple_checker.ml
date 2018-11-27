@@ -73,7 +73,7 @@ let subst_scheme : subst -> typ_scheme -> typ_scheme = fun subs tyscm ->
   | SimpleTyp t -> SimpleTyp (subs t)
 
 let subst_env : subst -> typ_env -> typ_env = fun subs tyenv ->
-  List.map (fun (x, SimpleType t) -> (x, SimpleType (subs t))) tyenv
+  List.map (fun (x, SimpleTyp t) -> (x, SimpleTyp (subs t))) tyenv
 
 let rec occurs : var -> typ -> bool = fun v t -> 
   match t with 
