@@ -15,12 +15,13 @@ let rec trans_obj : Sm5.obj -> Sonata.obj = function
   | Sm5.Val v -> Sonata.Val (trans_v v)
   | Sm5.Id id -> Sonata.Id id
   | Sm5.Fn (arg, command) ->
+  (* Sm5.Fn (arg, command) -> Sonata.Fn (arg, trans' ([Sm5.BIND "last!"] 
+  @ command @ [Sm5.PUSH (Sm5.Id "last!"); Sm5.PUSH (Sm5.Val (Sm5.Z 0)); Sm5.MALLOC; Sm5.CALL])) *)
     let tmp = "$fn" in
-    let body = [Sonata.MALLOC] @ [Sonata.BIND tmp] @ [Sonata.PUSH (Sonata.Id tmp)] @ [Sonata.STORE] @ 
-                trans' (command @ [Sm5.PUSH (Sm5.Id tmp)] @ [Sm5.LOAD] @
-                        [Sm5.PUSH (Sm5.Val Sm5.Unit)] @ [Sm5.PUSH (Sm5.Id tmp)] @ [Sm5.UNBIND] @ [Sm5.POP] @
+    let body = [Sm5.BIND tmp] @ command @ [Sm5.PUSH (Sm5.Id tmp)] @ [Sm5.LOAD] @
+                        [Sm5.PUSH (Sm5.Val Sm5.Unit)] @ [Sm5.PUSH (Sm5.Id tmp)] @ [Sm5.MALLOC] @
                         [Sm5.CALL]) in
-    Sonata.Fn (arg, body)
+    Sonata.Fn (arg, trans' body)
 
 (* TODO : complete this function *)
 and trans' : Sm5.command -> Sonata.command = function
