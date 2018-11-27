@@ -16,7 +16,7 @@ let rec trans_obj : Sm5.obj -> Sonata.obj = function
   | Sm5.Id id -> Sonata.Id id
   | Sm5.Fn (arg, command) ->
     let tmp = "$fn" in
-    let body = command @ [Sm5.PUSH (Sm5.Val (Sm5.Z 0)); Sm5.MALLOC; Sm5.CALL] in
+    let body = [Sm5.BIND "$fn"] @ command @ [Sm5.PUSH (Sm5.Id "$fn")] @ [Sm5.PUSH (Sm5.Val (Sm5.Z 0))] @ [Sm5.MALLOC] @ [Sm5.UNBIND] @ [Sm5.POP] @ [Sm5.CALL] in
     Sonata.Fn (arg, trans' body)
 
 (* TODO : complete this function *)
