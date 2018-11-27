@@ -158,22 +158,22 @@ struct
     | VAR x -> (env x, mem)
     | FN (x, e) -> (Closure (Fun (x, e), env), mem)
     | APP (e1, e2) ->
-      let (v1, m') = eval env mem e1 in
+      let (v1, m') = eval env mem e1 in (* v1 = <λx.e, σ> *)
       let (v2, m'') = eval env m' e2 in
       let (c, env') = getClosure v1 in
       (match c with 
       | Fun (x, e) -> eval (env' @+ (x, v2)) m'' e
       | RecFun (f, x, e) ->  (eval ((env' @+ (x, v2)) @+ (f, v1)) m'' e)
       )
-    | LET x -> 
-      (match x with 
-      | (VAL (x, e1), e2) -> (
+    | LET (d, e2) -> 
+      (match d with 
+      | VAL (x, e1) -> (
         let (v1, m') = eval env mem e1 in 
         eval (env @+ (x, v1)) m' e2
         )
-      | (REC (f, x, e1), e2) -> (
-        let (v1, m') = eval env mem (FN (x, e1)) in 
-        eval (env @+ (f, (Closure (RecFun (f, x, e1), env)))) m' e2
+      | REC (fid, aid, e1) -> (
+        let (v1, m') = eval env mem (FN (aid, e1)) in 
+        eval (env @+ (fid, (Closure (RecFun (fid, aid, e1), env)))) m' e2
         )
       )
     | IF (e1, e2, e3) ->
