@@ -43,12 +43,9 @@ let rec ftv_of_typ : typ -> var list = function
   | TVar v | TPrint v | TEqual v -> [v]
   | _ -> []
 
-let ftv_of_scheme : typ_scheme -> var list = function
-  | SimpleTyp t -> ftv_of_typ t
-
 let ftv_of_env : typ_env -> var list = fun tyenv ->
   List.fold_left
-    (fun acc_ftv (id, tyscm) -> union_ftv acc_ftv (ftv_of_scheme tyscm))
+    (fun acc_ftv (id, SimpleTyp t) -> union_ftv acc_ftv (ftv_of_typ t))
     [] tyenv
 
 type subst = typ -> typ
@@ -67,10 +64,6 @@ let make_subst : var -> typ -> subst = fun x t ->
   in subs
 
 let (@@) s1 s2 = (fun t -> s1 (s2 t))
-
-let subst_scheme : subst -> typ_scheme -> typ_scheme = fun subs tyscm ->
-  match tyscm with
-  | SimpleTyp t -> SimpleTyp (subs t)
 
 let subst_env : subst -> typ_env -> typ_env = fun subs tyenv ->
   List.map (fun (x, SimpleTyp t) -> (x, SimpleTyp (subs t))) tyenv
