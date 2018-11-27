@@ -26,12 +26,13 @@ type typ =
   | TEqual of var
   (* Modify, or add more if needed *)
 
+
+
 type typ_scheme = SimpleTyp of typ
 type typ_env = (M.id * typ_scheme) list
-
 type subst = typ -> typ
-let empty_subst : subst = fun t -> t
 
+let empty_subst : subst = fun t -> t
 let make_subst : var -> typ -> subst = fun x t ->
   let rec subs t' = 
     match t' with
@@ -49,6 +50,7 @@ let (@@) s1 s2 = (fun t -> s1 (s2 t))
 let subst_env : subst -> typ_env -> typ_env = fun subs tyenv ->
   List.map (fun (x, SimpleTyp t) -> (x, SimpleTyp (subs t))) tyenv
 
+
 let rec occurs : var -> typ -> bool = fun v t -> 
   match t with 
   | TLoc x -> occurs v x
@@ -56,6 +58,7 @@ let rec occurs : var -> typ -> bool = fun v t ->
   | TFun (x, y) -> occurs v x || occurs v y
   | TVar x | TEqual x | TPrint x -> (v = x)
   | _-> false
+
 
 let rec unify : typ -> typ -> subst = fun t1 t2 ->
   if t1 = t2 then empty_subst
