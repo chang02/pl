@@ -29,10 +29,6 @@ type typ =
 type typ_scheme = SimpleTyp of typ
 type typ_env = (M.id * typ_scheme) list
 
-type subst = typ -> typ
-let empty_subst : subst = fun t -> t
-
-
 let union_ftv ftv_1 ftv_2 =
   let ftv_1' = List.filter (fun v -> not (List.mem v ftv_2)) ftv_1 in
   ftv_1' @ ftv_2
