@@ -102,19 +102,17 @@ let rec unify : typ -> typ -> subst = fun t1 t2 ->
     | _ -> raise (M.TypeError "Type Mismatch")
   )
 
-let isExistId id env =
-  let (a, b) = List.split env in
-  if List.mem id a then true else false
+let findById id env =
+  match env with
+  | [] -> raise (M.TypeError "Unbound variable")
+  | hd::tl -> if (fst hd) = id then (snd hd) else findById id tl
 
 let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
   match exp with
   | M.CONST (M.S s) -> (empty_subst, TString)
   | M.CONST (M.N n) -> (empty_subst, TInt)
   | M.CONST (M.B b) -> (empty_subst, TBool)
-  | M.VAR id ->
-    if (isExistId id env)
-    then let t = List.assoc id env in (empty_subst, t)
-    else raise (M.TypeError "Unbound variable")
+  | M.VAR id -> let t = findById id env in (empty_subst, t)
   | M.FN (x, e) ->
     let v = TVar (new_var ()) in
     let (s, t) = check1((x, v)::env, e) in
