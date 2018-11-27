@@ -65,7 +65,7 @@ let (@@) s1 s2 = (fun t -> s1 (s2 t))
 let subst_env : subst -> typ_env -> typ_env = fun subs tyenv ->
   List.map (fun (x, tyscm) -> (x, subst_scheme subs tyscm)) tyenv
 
-let rec occurs var -> type -> bool = fun v t -> 
+let rec occurs : var -> type -> bool = fun v t -> 
   match t with 
   | TLoc x -> occurs v x
   | TPair (x, y) -> occurs v x || occurs v y
@@ -73,7 +73,7 @@ let rec occurs var -> type -> bool = fun v t ->
   | TVar x | TEqual x | TPrint x -> (v = x)
   | _-> false
 
-let rec expansive (e: M.exp): bool = 
+let rec expansive : M.exp -> bool = fun e -> 
   match e with
   | M.CONST _ -> false
   | M.VAR _ -> false
@@ -93,7 +93,7 @@ let rec expansive (e: M.exp): bool =
   | M.FST e1 -> expansive e1
   | M.SND e1 -> expansive e1 
 
-let rec unify typ -> typ -> subst = fun t1 t2 ->
+let rec unify : typ -> typ -> subst = fun t1 t2 ->
   if t1 = t2 then empty_subst else (
   begin
   match t1, t2 with
