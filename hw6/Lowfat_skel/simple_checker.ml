@@ -65,7 +65,7 @@ let (@@) s1 s2 = (fun t -> s1 (s2 t))
 let subst_env : subst -> typ_env -> typ_env = fun subs tyenv ->
   List.map (fun (x, tyscm) -> (x, subst_scheme subs tyscm)) tyenv
 
-let rec occurs : var -> type -> bool = fun v t -> 
+let rec occurs : var -> typ -> bool = fun v t -> 
   match t with 
   | TLoc x -> occurs v x
   | TPair (x, y) -> occurs v x || occurs v y
