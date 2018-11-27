@@ -205,7 +205,7 @@ let rec check1 : M.exp -> typ = fun e ->
       (s' @@ s, s' v2)
     )
     in
-    check1' ([], e)
+    snd (check1' ([], e))
 
 let rec check2 : typ -> M.types = fun tp ->
   match tp with
