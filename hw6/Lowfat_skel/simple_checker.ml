@@ -51,9 +51,6 @@ let ftv_of_env : typ_env -> var list = fun tyenv ->
     (fun acc_ftv (id, tyscm) -> union_ftv acc_ftv (ftv_of_scheme tyscm))
     [] tyenv
 
-let generalize : typ_env -> typ -> typ_scheme = fun tyenv t ->
-    SimpleTyp t
-
 type subst = typ -> typ
 let empty_subst : subst = fun t -> t
 
