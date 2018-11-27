@@ -187,7 +187,7 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
       let (s, t) = check1 (env, e1) in
       let (s', t') = check1 (subst_env s env, e2) in
       let s1 = unify (s' t) TInt in
-      let s2 = unify (s1, t') TInt in
+      let s2 = unify (s1 t') TInt in
       (s2 @@ s1 @@ s' @@ s, s2 t')
     | M.AND | M.OR ->
       let (s, t) = check1 (env, e1) in
