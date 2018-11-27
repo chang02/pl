@@ -105,12 +105,9 @@ let rec unify : typ -> typ -> subst = fun t1 t2 ->
   | y, TVar x ->
     if (occurs x y) then raise (M.TypeError "Type Mismatch") else make_subst x y
   | TLoc x, TLoc y -> unify x y
-  | TPair(w, x), TPair(y, z) ->
-    let tmp_subst = unify w y in
-    (unify (tmp_subst x) (tmp_subst z)) @@ tmp_subst
-  | TFun(w, x), TFun(y, z) -> 
-    let tmp_subst = unify w y in
-    (unify (tmp_subst x) (tmp_subst z)) @@ tmp_subst
+  | TPair(x, y), TPair(z, w) | TFun(x, y), TFun(z, w) ->
+    let tmp_subst = unify x z in
+    (unify (tmp_subst y) (tmp_subst w)) @@ tmp_subst
   | TEqual x, y | y, TEqual x -> (
     begin
     if (occurs x y) then raise (M.TypeError "Type Mismatch") else
