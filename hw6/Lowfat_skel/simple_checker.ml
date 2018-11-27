@@ -114,7 +114,7 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     let (s', t') = check1 ((x, t)::(subst_env s env), e') in
     (s' @@ s, t')
   | M.LET (M.REC (f, x, e), e') ->
-    let v = (TVar new_var ()) in
+    let v = TVar (new_var ()) in
     let (s, t) = check1 ((f, v)::env, M.FN (x, e)) in
     let s' = unify (s v) t in
     let (s'', t') = check1 ((f, s' t)::(subst_env s env), e') in
@@ -143,7 +143,7 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     | M.EQ ->
       let (s, t) = check1 (env, e1) in
       let (s', t') = check1 (subst_env s env, e2) in
-      let v = (TEqual new_var ()) in
+      let v = TEqual (new_var ()) in
       let s1 = unify (s' t) t' in
       let s2 = unify (s1 t') v in
       (s2 @@ s1 @@ s' @@ s, TBool)
@@ -164,7 +164,7 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     (s'' @@ s' @@ s, s'' t')
   | M.BANG e ->
     let (s, t) = check1 (env, e) in
-    let v = (TVar new_var ()) in
+    let v = TVar (new_var ()) in
     let s' = unify t (TLoc v) in
     (s' @@ s, s' v)
   | M.SEQ (e1, e2) ->
