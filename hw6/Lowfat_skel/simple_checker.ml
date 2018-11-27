@@ -200,7 +200,7 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
       let (s', t') = check1 (subst_env s env, e2) in
       let v = new_var () in
       let s1 = unify (s' t) t' in
-      let s2 = unify (s1 t') (TEq v) in
+      let s2 = unify (s1 t') (TEqual v) in
       (s2 @@ s1 @@ s' @@ s, TBool)
     )
   | M.READ -> (empty_subst, TInt)
