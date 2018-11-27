@@ -151,7 +151,7 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
   | M.CONST (M.B b) -> (empty_subst, TBool)
   | M.VAR id ->
     if (List.mem_assoc id env)
-    then let (SimpleTyp t) = List.assoc x env in (empty_subst, t)
+    then let (SimpleTyp t) = List.assoc id env in (empty_subst, t)
     else raise (M.TypeError "Unbound variable")
   | M.FN (x, e) ->
     let a = new_var () in
