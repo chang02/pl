@@ -170,7 +170,7 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     else let (s', t') = check1 ((x, generalize (subst_env s env) t)::(subst_env s env), e') in (s' @@ s, t')
   | M.LET (M.REC (f, x, e), e') ->
     let a = new_var () in
-    let (s, t) = check1 ((f, SimpleType (TVar a))::env, M.FN (x, e)) in
+    let (s, t) = check1 ((f, SimpleTyp (TVar a))::env, M.FN (x, e)) in
     let s' = unify (s (TVar beta)) t in
     let (s'', t') = check1 ((f, generalize (subst_env s env) (s' t))::(subst_env s env), e') in
     (s'' @@ s' @@ s, t')
