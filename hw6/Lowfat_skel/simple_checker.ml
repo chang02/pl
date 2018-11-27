@@ -120,12 +120,12 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     let (s2, t2) = check1 ((f, s' t1)::(subst_env s1 env), e2) in
     (s2 @@ s' @@ s1, t2)
   | M.IF (e1, e2, e3) ->
-    let (s, t) = check1 (env, e1) in
-    let s' = unify t TBool in
-    let (s1, t1) = check1 (subst_env (s' @@ s) env, e2) in
-    let (s2, t2) = check1 (subst_env (s' @@ s) env, e3) in
-    let s'' = unify t1 t2 in
-    (s'' @@ s2 @@ s1 @@ s' @@ s, t2)
+    let (s1, t1) = check1 (env, e1) in
+    let s' = unify t1 TBool in
+    let (s2, t2) = check1 (subst_env (s' @@ s1) env, e2) in
+    let (s3, t3) = check1 (subst_env (s' @@ s1) env, e3) in
+    let s'' = unify t2 t3 in
+    (s'' @@ s3 @@ s2 @@ s' @@ s1, t3)
   | M.BOP (b, e1, e2) ->
     (match b with
     | M.ADD | M.SUB ->
