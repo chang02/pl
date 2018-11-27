@@ -41,11 +41,11 @@ let sub_ftv ftv_1 ftv_2 =
   List.filter (fun v -> not (List.mem v ftv_2)) ftv_1
 
 let rec ftv_of_typ : typ -> var list = function
-  | TInt | TBool | TString -> []
   | TPair (t1, t2) -> union_ftv (ftv_of_typ t1) (ftv_of_typ t2)
   | TLoc t -> ftv_of_typ t
   | TFun (t1, t2) ->  union_ftv (ftv_of_typ t1) (ftv_of_typ t2)
-  | TVar v -> [v]
+  | TVar v | TPrint v | TEqual v -> [v]
+  | _ -> []
 
 let ftv_of_scheme : typ_scheme -> var list = function
   | SimpleTyp t -> ftv_of_typ t
