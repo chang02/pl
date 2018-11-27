@@ -101,7 +101,7 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     else raise (M.TypeError "Unbound variable")
   | M.FN (x, e) ->
     let (s, t) = check1((x, TVar (new_var ()))::env, e) in
-    (s, TFun (s (TVar a), t))
+    (s, TFun (s (TVar (new_var ())), t))
   | M.APP (e1, e2) ->
     let (s, t) = check1 (env, e1) in
     let (s', t') = check1 (subst_env s env, e2) in
