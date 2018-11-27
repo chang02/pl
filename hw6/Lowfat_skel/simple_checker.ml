@@ -195,6 +195,13 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
       let s1 = unify (s' t) TBool in
       let s2 = unify t' TBool in
       (s2 @@ s1 @@ s' @@ s, s2 t')
+    | M.EQ ->
+      let (s, t) = check1 (env, e1) in
+      let (s', t') = check1 (subst_env s env, e2) in
+      let v = new_var () in
+      let s1 = unify (s' t) t' in
+      let s2 = unify (s1 t') (TEq v) in
+      (s2 @@ s1 @@ s' @@ s, TBool)
     )
   | M.READ -> (empty_subst, TInt)
   | M.WRITE e ->
