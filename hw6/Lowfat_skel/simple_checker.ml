@@ -13,7 +13,7 @@ let count = ref 0
 let new_var () = 
   let _ = count := !count +1 in
   "x_" ^ (string_of_int !count)
-  
+
 type typ = 
   | TInt
   | TBool
@@ -31,6 +31,30 @@ type typ_env = (M.id * typ_scheme) list
 
 type subst = typ -> typ
 let empty_subst : subst = fun t -> t
+
+
+let union_ftv ftv_1 ftv_2 =
+  let ftv_1' = List.filter (fun v -> not (List.mem v ftv_2)) ftv_1 in
+  ftv_1' @ ftv_2
+
+let sub_ftv ftv_1 ftv_2 =
+  List.filter (fun v -> not (List.mem v ftv_2)) ftv_1
+
+let rec ftv_of_typ : typ -> var list = function
+  | TInt | TBool | TString -> []
+  | TPair (t1, t2) -> union_ftv (ftv_of_typ t1) (ftv_of_typ t2)
+  | TLoc t -> ftv_of_typ t
+  | TFun (t1, t2) ->  union_ftv (ftv_of_typ t1) (ftv_of_typ t2)
+  | TVar v -> [v]
+
+let ftv_of_scheme : typ_scheme -> var list = function
+  | SimpleTyp t -> ftv_of_typ t
+  | GenTyp (alphas, t) -> sub_ftv (ftv_of_typ t) alphas
+
+let ftv_of_env : typ_env -> var list = fun tyenv ->
+  List.fold_left
+    (fun acc_ftv (id, tyscm) -> union_ftv acc_ftv (ftv_of_scheme tyscm))
+    [] tyenv
 
 
 let generalize : typ_env -> typ -> typ_scheme = fun tyenv t ->
