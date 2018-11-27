@@ -97,38 +97,32 @@ let rec expansive : M.exp -> bool = fun e ->
   | M.SND e1 -> expansive e1 
 
 let rec unify : typ -> typ -> subst = fun t1 t2 ->
-  if t1 = t2 then empty_subst else (
-  begin
-  match t1, t2 with
-  | TVar x, y -> 
-    if (occurs x y) then raise (M.TypeError "Type Mismatch") else make_subst x y
-  | y, TVar x ->
-    if (occurs x y) then raise (M.TypeError "Type Mismatch") else make_subst x y
-  | TLoc x, TLoc y -> unify x y
-  | TPair(x, y), TPair(z, w) | TFun(x, y), TFun(z, w) ->
-    let tmp_subst = unify x z in
-    (unify (tmp_subst y) (tmp_subst w)) @@ tmp_subst
-  | TEqual x, y | y, TEqual x -> (
-    begin
-    if (occurs x y) then raise (M.TypeError "Type Mismatch") else
-    (
-      match y with
-      | TPair _ | TFun _ | TVar _ -> 
-        raise (M.TypeError "Type Mismatch")
-      | _ -> make_subst x y 
-    ) 
-    end)
-  | TPrint x, y | y, TPrint x -> (
-    begin
-    if (occurs x y) then raise (M.TypeError "Type Mismatch") else
-    (
-      match y with
-      | TInt | TBool | TString | TPrint _ -> make_subst x y
-      | _ -> raise (M.TypeError "Type Mismatch")
-    )
-    end)
-  | _ -> raise (M.TypeError "Type Mismatch")
-  end
+  if t1 = t2 then empty_subst
+  else (
+    match t1, t2 with
+    | TVar x, y -> 
+      if (occurs x y) then raise (M.TypeError "Type Mismatch") else make_subst x y
+    | y, TVar x ->
+      if (occurs x y) then raise (M.TypeError "Type Mismatch") else make_subst x y
+    | TLoc x, TLoc y -> unify x y
+    | TPair(x, y), TPair(z, w) | TFun(x, y), TFun(z, w) ->
+      let tmp_subst = unify x z in
+      (unify (tmp_subst y) (tmp_subst w)) @@ tmp_subst
+    | TEqual x, y | y, TEqual x -> 
+      if (occurs x y) then raise (M.TypeError "Type Mismatch")
+      else (
+        match y with
+        | TPair _ | TFun _ | TVar _ -> raise (M.TypeError "Type Mismatch")
+        | _ -> make_subst x y 
+      ) 
+    | TPrint x, y | y, TPrint x -> 
+      if (occurs x y) then raise (M.TypeError "Type Mismatch")
+      else (
+        match y with
+        | TInt | TBool | TString | TPrint _ -> make_subst x y
+        | _ -> raise (M.TypeError "Type Mismatch")
+      )
+    | _ -> raise (M.TypeError "Type Mismatch")
   )
 
 let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
