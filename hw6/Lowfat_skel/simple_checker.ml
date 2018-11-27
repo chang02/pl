@@ -111,7 +111,7 @@ let rec check1 : typ_env * M.exp -> (subst * typ) = fun (env, exp) ->
     (s'' @@ s' @@ s, s'' (TVar a))
   | M.LET (M.VAL (x, e), e') ->
     let (s, t) = check1 (env, e) in
-    let (s', t') = check1 ((x, SimpleTyp t)::(subst_env s env), e') in
+    let (s', t') = check1 ((x, t)::(subst_env s env), e') in
     (s' @@ s, t')
   | M.LET (M.REC (f, x, e), e') ->
     let a = new_var () in
