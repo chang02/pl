@@ -62,25 +62,41 @@ let rec unify : typ -> typ -> subst = fun t1 t2 ->
   if t1 = t2 then empty_subst
   else (
     match t1, t2 with
-    | TVar x, y | y, TVar x-> 
+    | TVar x, y -> 
       if (occurs x y) then raise (M.TypeError "Type Mismatch") else make_subst x y
+    | x, TVar y ->
+      if (occurs y x) then raise (M.TypeError "Type Mismatch") else make_subst y x 
     | TLoc x, TLoc y -> unify x y
     | TPair(x, y), TPair(z, w) | TFun(x, y), TFun(z, w) ->
       let tmp = unify x z in
       let tmp2 = (unify (tmp y) (tmp w)) in
       tmp2 @@ tmp
-    | TEqual x, y | y, TEqual x -> 
+    | TEqual x, y -> 
       if (occurs x y) then raise (M.TypeError "Type Mismatch")
       else (
         match y with
         | TPair _ | TFun _ | TVar _ -> raise (M.TypeError "Type Mismatch")
         | _ -> make_subst x y 
-      ) 
-    | TPrint x, y | y, TPrint x -> 
+      )
+    | x, TEqual y ->
+      if (occurs y x) then raise (M.TypeError "Type Mismatch")
+      else (
+        match x with
+        | TPair _ | TFun _ | TVar _ -> raise (M.TypeError "Type Mismatch")
+        | _ -> make_subst y x 
+      )
+    | TPrint x, y -> 
       if (occurs x y) then raise (M.TypeError "Type Mismatch")
       else (
         match y with
         | TInt | TBool | TString | TPrint _ -> make_subst x y
+        | _ -> raise (M.TypeError "Type Mismatch")
+      )
+    | x, TPrint y ->
+      if (occurs y x) then raise (M.TypeError "Type Mismatch")
+      else (
+        match x with
+        | TInt | TBool | TString | TPrint _ -> make_subst y x
         | _ -> raise (M.TypeError "Type Mismatch")
       )
     | _ -> raise (M.TypeError "Type Mismatch")
