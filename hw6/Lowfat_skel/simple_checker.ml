@@ -13,13 +13,7 @@ let count = ref 0
 let new_var () = 
   let _ = count := !count +1 in
   "x_" ^ (string_of_int !count)
-
-type typ_scheme = SimpleTyp of typ
-type typ_env = (M.id * typ_scheme) list
-
-type subst = typ -> typ
-let empty_subst : subst = fun t -> t
-
+  
 type typ = 
   | TInt
   | TBool
@@ -31,6 +25,13 @@ type typ =
   | TPrint of var
   | TEqual of var
   (* Modify, or add more if needed *)
+
+type typ_scheme = SimpleTyp of typ
+type typ_env = (M.id * typ_scheme) list
+
+type subst = typ -> typ
+let empty_subst : subst = fun t -> t
+
 
 let generalize : typ_env -> typ -> typ_scheme = fun tyenv t ->
   let env_ftv = ftv_of_env tyenv in
