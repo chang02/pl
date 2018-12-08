@@ -111,7 +111,7 @@ let subst_scheme : subst -> typ_scheme -> typ_scheme = fun subs tyscm ->
 let subst_env : subst -> typ_env -> typ_env = fun subs tyenv ->
   List.map (fun (x, tyscm) -> (x, subst_scheme subs tyscm)) tyenv
 
-let expansive : M.exp -> bool = fun exp ->
+let rec expansive : M.exp -> bool = fun exp ->
   match exp with
   | M.CONST _ | M.VAR _ | M.FN _ | M.READ -> false
   | M.APP _ | M.MALLOC _ -> true
