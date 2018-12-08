@@ -287,7 +287,7 @@ let rec check1 : M.exp -> typ = fun e ->
   snd (check1' [] e)
 
 
-let rec check2 : typ -> M.types = fun tp ->
+let rec check2 : typ -> M.typ = fun tp ->
   match tp with
   | TInt -> M.TyInt
   | TBool -> M.TyBool
