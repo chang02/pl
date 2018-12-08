@@ -192,7 +192,7 @@ let rec check1 : M.exp -> typ = fun e ->
         (empty_subst, t'))
     | M.FN (x, e) ->
       let v = TVar (new_var ()) in
-      let (s, t) = check1' (x, SimpleTyp v)::env e in
+      let (s, t) = check1' ((x, SimpleTyp v)::env) e in
       (s, TFun (s v, t))
     | M.APP (e1, e2) ->
       let v = TVar (new_var ()) in
