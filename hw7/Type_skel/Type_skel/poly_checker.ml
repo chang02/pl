@@ -196,7 +196,7 @@ let rec check1 : M.exp -> typ = fun e ->
       (s, TFun (s v, t))
     | M.APP (e1, e2) ->
       let v = TVar (new_var ()) in
-      let (s, t) = check1' (env, e1) in
+      let (s, t) = check1' env e1 in
       let (s', t') = check1' (subst_env s env) e2 in
       let s'' = unify (s' t) (TFun (t', v)) in
       (s'' @@ s' @@ s, s'' v)
