@@ -172,7 +172,7 @@ let rec unify : typ -> typ -> subst = fun t1 t2 ->
 
 let rec check1 : M.exp -> typ = fun e ->
   let rec check1' : typ_env -> M.exp -> (subst * typ) = fun env exp ->
-    match exp with
+    (match exp with
     | M.CONST (M.S s) -> (empty_subst, TString)
     | M.CONST (M.N n) -> (empty_subst, TInt)
     | M.CONST (M.B b) -> (empty_subst, TBool)
