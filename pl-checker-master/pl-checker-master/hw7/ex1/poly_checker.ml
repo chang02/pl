@@ -184,11 +184,11 @@ let rec check1 : M.exp -> typ = fun e ->
         | [] -> raise (M.TypeError "Unbound variable")
         | hd::tl -> if (fst hd) = id then (snd hd) else findById id tl)
       in
-      let t = findById id env in
+      let tmpt = findById id env in
       (match t with
       | SimpleTyp t -> (empty_subst, t)
       | GenTyp (_, t) ->
-        let GenTyp (_, t') = subst_scheme empty_subst t in
+        let GenTyp (_, t') = subst_scheme empty_subst tmpt in
         (empty_subst, t'))
     | M.FN (x, e) ->
       let v = TVar (new_var ()) in
