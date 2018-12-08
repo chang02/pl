@@ -5,18 +5,18 @@
 
 open M
 
-type var = string 
+type var = string
 
 type typ = 
   | TInt
   | TBool
   | TString
+  | TWrite of var
+  | TEq of var
   | TPair of typ * typ
   | TLoc of typ
   | TFun of typ * typ
   | TVar of var
-  | TPrint of var
-  | TEqual of var
   (* Modify, or add more if needed *)
 
 type typ_scheme =
@@ -25,16 +25,14 @@ type typ_scheme =
 
 type typ_env = (M.id * typ_scheme) list
 
-type subst = typ -> typ
-
-let empty_subst : subst = fun t -> t
-
 let count = ref 0 
+
 let new_var () = 
   let _ = count := !count +1 in
   "x_" ^ (string_of_int !count)
 
 (* Definitions related to free type variable *)
+
 let union_ftv ftv_1 ftv_2 = 
   let ftv_1' = List.filter (fun v -> not (List.mem v ftv_2)) ftv_1 in
   ftv_1' @ ftv_2
@@ -47,7 +45,7 @@ let rec ftv_of_typ : typ -> var list = function
   | TPair (t1, t2) -> union_ftv (ftv_of_typ t1) (ftv_of_typ t2)
   | TLoc t -> ftv_of_typ t
   | TFun (t1, t2) ->  union_ftv (ftv_of_typ t1) (ftv_of_typ t2)
-  | TPrint v | TEqual v | TVar v -> [v]
+  | TVar v | TWrite v | TEq v -> [v]
 
 let ftv_of_scheme : typ_scheme -> var list = function
   | SimpleTyp t -> ftv_of_typ t
@@ -69,22 +67,19 @@ let generalize : typ_env -> typ -> typ_scheme = fun tyenv t ->
     GenTyp(ftv, t)
 
 (* Definitions related to substitution *)
+
+type subst = typ -> typ
+
+let empty_subst : subst = fun t -> t
+
 let make_subst : var -> typ -> subst = fun x t ->
   let rec subs t' = 
     match t' with
-    | TVar x' -> if (x = x') then t else t'
+    | TEq x' | TWrite x' | TVar x' -> if (x = x') then t else t'
     | TPair (t1, t2) -> TPair (subs t1, subs t2)
     | TLoc t'' -> TLoc (subs t'')
     | TFun (t1, t2) -> TFun (subs t1, subs t2)
     | TInt | TBool | TString -> t'
-    | TEqual x' -> (
-      if (x' = x) 
-      then ( match t with | TVar y -> TEqual y | _ -> t )
-      else t')     
-    | TPrint x' -> (
-      if (x' = x) 
-      then( match t with | TVar y | TEqual y -> TPrint y | _ -> t )
-      else t')
   in subs
 
 let (@@) s1 s2 = (fun t -> s1 (s2 t)) (* substitution composition *)
@@ -105,199 +100,197 @@ let subst_scheme : subst -> typ_scheme -> typ_scheme = fun subs tyscm ->
 let subst_env : subst -> typ_env -> typ_env = fun subs tyenv ->
   List.map (fun (x, tyscm) -> (x, subst_scheme subs tyscm)) tyenv
 
-(*****************************************************************************)
-let rec occurs (v: var) (t: typ): bool = 
-  match t with 
-  | TInt | TBool | TString -> false
-  | TLoc x -> occurs v x
-  | TPair (x, y) -> occurs v x || occurs v y
-  | TFun (x, y) -> occurs v x || occurs v y
-  | TVar x | TEqual x | TPrint x -> (v = x)
 
-let rec expansive (e: M.exp): bool = 
-  match e with
-  | M.CONST _ -> false
-  | M.VAR _ -> false
-  | M.FN _ -> false
-  | M.READ -> false  
-  | M.APP _ -> true
-  | M.MALLOC _ -> true  
-  | M.LET (M.VAL (x, e1), e2) -> expansive e1 || expansive e2
-  | M.LET (M.REC (f, x, e1), e2) -> expansive e1 || expansive e2
-  | M.IF (e1, e2, e3) -> expansive e1 || expansive e2 || expansive e3
-  | M.BOP (_, e1, e2) -> expansive e1 || expansive e2
-  | M.WRITE e1 -> expansive e1
-  | M.ASSIGN (e1, e2) -> expansive e1 || expansive e2
-  | M.BANG e1 -> expansive e1
-  | M.SEQ (e1, e2) -> expansive e1 || expansive e2
-  | M.PAIR (e1, e2) -> expansive e1 || expansive e2
-  | M.FST e1 -> expansive e1
-  | M.SND e1 -> expansive e1 
+(* TODO : Implement this function *)
 
-let rec unify (t1: typ) (t2: typ): subst =
-  if t1 = t2 then empty_subst else (
-  begin
-  match t1, t2 with
-  | TVar x, y -> 
-    if (not (occurs x y)) then make_subst x y else raise (M.TypeError "Type Mismatch")
-  | y, TVar x ->
-    if (not (occurs x y)) then make_subst x y else raise (M.TypeError "Type Mismatch")
-  | TLoc x, TLoc y -> unify x y
-  | TPair(w, x), TPair(y, z) ->
-    let tmp_subst = unify w y in
-    (unify (tmp_subst x) (tmp_subst z)) @@ tmp_subst
-  | TFun(w, x), TFun(y, z) -> 
-    let tmp_subst = unify w y in
-    (unify (tmp_subst x) (tmp_subst z)) @@ tmp_subst
-  | TEqual x, y | y, TEqual x -> (
-    begin
-    if (occurs x y) then raise (M.TypeError "Type Mismatch") else
-    (
-      match y with
-      | TPair _ | TFun _ | TVar _ -> 
-        raise (M.TypeError "Type Mismatch")
-      | _ -> make_subst x y 
-    ) 
-    end)
-  | TPrint x, y | y, TPrint x -> (
-    begin
-    if (occurs x y) then raise (M.TypeError "Type Mismatch") else
-    (
-      match y with
-      | TInt | TBool | TString | TPrint _ -> make_subst x y
-      | _ -> raise (M.TypeError "Type Mismatch")
-    )
-    end)
-  | _ -> raise (M.TypeError "Type Mismatch")
-  end
-  )
+let rec occurs (str: string) (t: typ) : bool =
+  match t with
+  | TVar x | TWrite x | TEq x -> str = x
+  | TPair (t1, t2) -> occurs str t1 || occurs str t2
+  | TLoc t' -> occurs str t'
+  | TFun (t1, t2) -> occurs str t1 || occurs str t2
+  | _ -> false
 
-let rec toMtype (t: typ) : M.typ =
+let rec unify (tt: typ * typ) : subst =
+  match tt with
+  | (TInt, TInt) | (TBool, TBool) | (TString, TString) -> empty_subst
+  | (TVar x, TVar y)
+  | (TVar x, TWrite y)
+  | (TVar x, TEq y) -> if x = y then empty_subst else make_subst x (snd tt)
+  | (TVar x, _) -> if occurs x (snd tt) then raise (M.TypeError "cannot occur") else make_subst x (snd tt)
+  | (TEq x, TEq y)
+  | (TEq x, TWrite y) -> if x = y then empty_subst else make_subst x (snd tt)
+  | (TWrite x, TWrite y) -> if x = y then empty_subst else make_subst x (snd tt)
+  | (TWrite x, TVar y)
+  | (TWrite x, TEq y)
+  | (TEq x, TVar y) -> if x = y then empty_subst else make_subst y (fst tt)
+  | (_, TVar y) -> if occurs y (fst tt) then raise (M.TypeError "cannot occur") else make_subst y (fst tt)
+  | (TPair (t1, t2), TPair (t1', t2')) ->
+    let s = unify (t1, t1') in
+    let s' = unify ((s t2), (s t2')) in
+    s' @@ s
+  | (TLoc t1, TLoc t2) -> unify (t1, t2)
+  | (TFun (t1, t2), TFun (t1', t2')) ->
+    let s = unify (t1, t1') in
+    let s' = unify ((s t2), (s t2')) in
+    s' @@ s
+  | (TWrite x, TInt)
+  | (TWrite x, TBool)
+  | (TWrite x, TString)
+  | (TEq x, TInt)
+  | (TEq x, TBool)
+  | (TEq x, TString) -> make_subst x (snd tt)
+  | (TInt, TWrite y)
+  | (TBool, TWrite y)
+  | (TString, TWrite y)
+  | (TInt, TEq y)
+  | (TBool, TEq y)
+  | (TString, TEq y) -> make_subst y (fst tt)
+  | (TEq x, TLoc t2) -> if occurs x (snd tt) then raise (M.TypeError "cannot occur") else make_subst x (snd tt)
+  | (TLoc t1, TEq y) -> if occurs y (fst tt) then raise (M.TypeError "cannot occur") else make_subst y (fst tt)
+  | (_, _) -> raise (M.TypeError "cannot unify")
+
+let rec typ_to_mtyp: typ -> M.typ = fun t ->
   match t with
   | TInt -> M.TyInt
   | TBool -> M.TyBool
   | TString -> M.TyString
-  | TPair (t1, t2) -> M.TyPair (toMtype t1, toMtype t2)
-  | TLoc t1 -> M.TyLoc (toMtype t1)
-  | _ -> raise (M.TypeError "Type Mismatch")
+  | TPair (t1, t2) -> M.TyPair(typ_to_mtyp t1, typ_to_mtyp t2)
+  | TLoc t' -> M.TyLoc (typ_to_mtyp t')
+  | _ -> raise (M.TypeError "Type not included in M")
 
-let find_operand x =
-  let v1 = new_var() in
-  match x with
-  | M.ADD | M.SUB -> (TInt, TInt)
-  | M.AND | M.OR -> (TBool, TBool)
-  | M.EQ -> (TEqual v1, TBool)
+let rec expansive (exp: M.exp) : bool =
+  match exp with
+  | M.CONST _ | M.VAR _ | M.FN _ | M.READ  -> false 
+  | M.LET (M.REC (f, x, e), e') -> false
+  | M.APP (e1, e2) -> true
+  | M.MALLOC e -> true
+  | M.IF (e1, e2, e3) -> expansive e1 || expansive e2 || expansive e3
+  | M.BOP (_, e1, e2) -> expansive e1 || expansive e2
+  | M.LET (M.VAL (x, e1), e2) -> expansive e1 || expansive e2
+  | M.ASSIGN (e1, e2) | M.SEQ (e1, e2) | M.PAIR (e1, e2) -> expansive e1 || expansive e2
+  | M.WRITE e | M.BANG e | M.FST e | M.SND e -> expansive e
 
-let find_type (x: string) (env: typ_env): typ =
-  if (List.mem_assoc x env)
-  then (
-    match List.assoc x env with 
-    | SimpleTyp t -> t
-    | GenTyp (alphas, t) -> (
-        match (subst_scheme empty_subst (GenTyp (alphas, t))) with
-        | GenTyp (_, t') -> t'
-        | _ -> raise (M.TypeError "Type Mismatch")
+let check  (exp: M.exp) : M.typ  =
+  let rec eest ((env: typ_env), (exp: M.exp)) : subst * typ =
+  match exp with
+  | M.CONST const -> (
+    match const with 
+    | M.N n -> (empty_subst, TInt)
+    | M.B b -> (empty_subst, TBool)
+    | M.S str -> (empty_subst, TString)
     )
-  )
-  else raise (M.TypeError "Type Mismatch")  
-  
-let rec checkType (env: typ_env) (e: M.exp) (t: typ): subst =
-  let v1 = new_var() in 
-  let v2 = new_var() in
-  match e with 
-    | M.CONST M.S _ -> unify t TString
-    | M.CONST M.N _ -> unify t TInt
-    | M.CONST M.B _ -> unify t TBool
-    | M.READ -> unify t TInt 
-    | M.BANG x -> checkType env x (TLoc t)   
-    | M.VAR x -> 
-      let t' = find_type x env in
-      unify t t'
-    | M.FN (x, y) -> 
-      let tmp_subst = unify t (TFun (TVar v1, TVar v2)) in
-      let e' = subst_env tmp_subst env in 
-      (checkType ([x, SimpleTyp (tmp_subst (TVar v1))] @ e') y (tmp_subst (TVar v2))) @@ tmp_subst
-    | M.APP (x, y) -> 
-      let tmp_subst = checkType env x (TFun (TVar v1, t)) in 
-      let x' = tmp_subst (TVar v1) in
-      let e' = subst_env tmp_subst env in 
-      (checkType e' y x') @@ tmp_subst
-    | M.LET (M.VAL (x, y), z) -> 
+  | M.READ -> (empty_subst, TInt)
+  | M.WRITE e ->
+    let v = new_var() in
+    let (s, t) = eest (env, e) in
+    let s' = unify (t, (TWrite v)) in
+    (s' @@ s, s' (TWrite v))
+  | M.VAR x -> 
+    if (List.mem_assoc x env) then
       begin
-      let tmp_subst = checkType env y (TVar v1) in 
-      let x' = tmp_subst (TVar v1) in 
-      let e' = subst_env tmp_subst env in 
-      let t' = tmp_subst t in 
-      if (expansive y) 
-      then (checkType ([x, SimpleTyp x'] @ e') z t') @@ tmp_subst
-      else (checkType ([x, generalize e' x'] @ e') z t') @@ tmp_subst
-      end 
-    | M.LET (M.REC (w, x, y), z) -> 
-      begin   
-      let tmp_subst = checkType ([w, SimpleTyp (TVar v1)]@env) (M.FN (x, y)) (TVar v1) in 
-      let x' = tmp_subst (TVar v1) in 
-      let e' = subst_env tmp_subst env in 
-      let t' = tmp_subst t in 
-      let e'' = [w, generalize e' x'] @ e' in 
-      (checkType e'' z t') @@ tmp_subst
+      let typscheme = List.assoc x env in 
+      match typscheme with
+      | SimpleTyp t -> (empty_subst, t)
+      | GenTyp (a, t) ->
+        let nextGen = subst_scheme empty_subst typscheme in
+      	begin
+      	  match nextGen with
+      	  | SimpleTyp _ -> raise (M.TypeError "Cannot be SimpleTyp")
+      	  | GenTyp (_, t') -> (empty_subst, t')
+      	end
       end
-    | M.IF (x, y, z) -> 
-      begin
-      let tmp_subst = checkType env x TBool in 
-      let e' = subst_env tmp_subst env in 
-      let t' = tmp_subst t in 
-      let tmp_subst2 = checkType e' y t' in 
-      let e'' = subst_env tmp_subst2 e' in 
-      let t'' = tmp_subst2 t' in 
-      (checkType e'' z t'') @@ tmp_subst2 @@ tmp_subst
-      end
-    | M.BOP (x, y, z) -> 
-      begin
-      let ty = find_operand x in 
-      let tmp_subst = unify t (snd ty) in 
-      let x' = tmp_subst (fst ty) in 
-      let e' = subst_env tmp_subst env in 
-      let tmp_subst2 = checkType e' y x' in 
-      let x'' = tmp_subst2 x' in 
-      let e'' = subst_env tmp_subst2 e' in 
-      (checkType e'' z x'') @@ tmp_subst2 @@ tmp_subst
-      end
-    | M.WRITE x -> 
-      let tmp_subst = unify t (TPrint v1) in 
-      let t' = tmp_subst t in 
-      let e' = subst_env tmp_subst env in 
-      (checkType e' x t') @@ tmp_subst
-    | M.MALLOC x -> 
-      let tmp_subst = checkType env x (TVar v1) in 
-      let x' = tmp_subst (TVar v1) in 
-      let t' = tmp_subst t in
-      (unify t' (TLoc x')) @@ tmp_subst  
-    | M.ASSIGN (x, y) -> 
-      let tmp_subst = checkType env x (TLoc t) in 
-      let e' = subst_env tmp_subst env in 
-      let t' = tmp_subst t in
-      (checkType e' y t') @@ tmp_subst
-    | M.SEQ (x, y) ->
-      let tmp_subst = checkType env x (TVar v1) in 
-      let e' = subst_env tmp_subst env in 
-      let t' = tmp_subst t in
-      (checkType e' y t') @@ tmp_subst  
-    | M.PAIR (x, y) ->
-      let tmp_subst = unify t (TPair (TVar v1, TVar v2)) in 
-      let x1 = tmp_subst (TVar v1) in 
-      let x2 = tmp_subst (TVar v2) in 
-      let e' = subst_env tmp_subst env in 
-      let tmp_subst2 = (checkType e' x x1) in 
-      let x3 = tmp_subst2 x2 in 
-      let e'' = subst_env tmp_subst2 e' in 
-      (checkType e'' y x3) @@ tmp_subst2 @@ tmp_subst
-    | M.FST x -> 
-      checkType env x (TPair (t, TVar v1))
-    | M.SND x -> 
-      checkType env x (TPair (TVar v1, t))
-
-(* TODO : Implement this function *)
-
-let check (e: M.exp): M.typ =
-  let v = new_var() in 
-  toMtype ((checkType [] e (TVar v)) (TVar v))
+    else
+      raise (M.TypeError "Unbound variable")
+  | M.PAIR (e1, e2) ->
+    let (s1, t1) = eest (env, e1) in
+    let (s2, t2) = eest (subst_env s1 env, e2) in
+    (s2 @@ s1, TPair (s2 t1, t2))
+  | M.FST e ->
+    let v1 = new_var () in
+    let v2 = new_var () in
+    let (s, t) = eest (env, e) in
+    let s' = unify (t, (TPair (TVar v1, TVar v2))) in
+    (s' @@ s, s' (TVar v1))
+  | M.SND e ->
+    let v1 = new_var () in
+    let v2 = new_var () in
+    let (s, t) = eest (env, e) in
+    let s' = unify (t, (TPair (TVar v1, TVar v2))) in
+    (s' @@ s, s' (TVar v2))
+  | M.FN (x, e) ->
+    let v = new_var () in
+    let (s, t) =  eest ((x, SimpleTyp (TVar v))::env, e)in
+    (s, TFun (s (TVar v), t))
+  | M.APP (e1, e2) ->
+    let v = new_var () in
+    let (s1, t1) = eest (env, e1) in
+    let (s2, t2) = eest (subst_env s1 env, e2) in
+    let s' = unify ((s2 t1), (TFun (t2, TVar v))) in
+    (s' @@ s2 @@ s1, s' (TVar v))
+  | M.LET (m, e') -> (
+    match m with
+    | M.VAL (x, e) ->
+      let (s, t) = eest (env, e) in
+      if (expansive e) then
+        begin
+      	let (s', t') = eest ((x, SimpleTyp t)::(subst_env s env), e') in
+      	(s' @@ s, t')
+      	end
+      else
+        begin
+      	let (s', t') = eest ((x, generalize (subst_env s env) t)::(subst_env s env), e') in
+      	(s' @@ s, t')
+      	end
+    | M.REC (f, x, e) ->
+      let v = new_var () in
+      let (s, t) = eest ((f, SimpleTyp (TVar v))::env, M.FN (x, e)) in
+      let s' = unify ((s (TVar v)), t) in
+      let (s'', t') = eest ((f, generalize (subst_env s env) (s' t))::(subst_env s env), e') in
+      (s'' @@ s' @@ s, t')
+    )
+    
+  | M.IF (ec, et, ef) ->
+    let (sc, tc) = eest (env, ec) in
+    let sc' = unify (tc, TBool) in
+    let (st, tt) = eest (subst_env (sc' @@ sc) env, et) in
+    let (sf, tf) = eest (subst_env (sc' @@ sc) env, ef) in
+    let s' = unify (tt, tf) in
+    (s' @@ sf @@ st @@ sc' @@ sc, tf)
+  | M.BOP (m, e1, e2) -> (
+     let (s1, t1) = eest (env, e1) in
+     let (s2, t2) = eest (subst_env s1 env, e2) in
+    match m with
+    | M.EQ -> 
+      let v = new_var () in
+      let s' = unify ((s2 t1), t2) in
+      let s'' = unify ((s' t2), (TEq v)) in
+      (s'' @@ s' @@ s2 @@ s1, TBool)
+    | M.ADD | M.SUB ->
+      let s' = unify ((s2 t1), TInt) in
+      let s'' = unify ((s' t2), TInt) in
+      (s'' @@ s' @@ s2 @@ s1, s'' t2)
+    | M.AND | M.OR ->
+     let s' = unify ((s2 t1), TBool) in
+     let s'' = unify ((s' t2), TBool) in
+     (s'' @@ s' @@ s2 @@ s1, s'' t2)
+     )
+  | M.MALLOC e -> 
+    let (s, t) = eest (env, e) in
+    (s, TLoc t)
+  | M.ASSIGN (e1, e2) ->
+    let (s1, t1) = eest (env, e1) in
+    let (s2, t2) = eest (subst_env s1 env, e2) in
+    let s' = unify ((s2 t1), (TLoc t2)) in 
+    (s' @@ s2 @@ s1, s' t2)
+  | M.BANG e ->
+    let v = new_var() in
+    let (s, t) = eest (env, e) in
+    let s' = unify (t, (TLoc (TVar v))) in
+    (s' @@ s, (TVar v))
+  | M.SEQ (e1, e2) ->
+    let (s1, t1) = eest (env, e1) in
+    let (s2, t2) = eest (subst_env s1 env, e2) in
+    (s2 @@ s1, t2)
+  in
+  typ_to_mtyp (snd (eest ([], exp)))
