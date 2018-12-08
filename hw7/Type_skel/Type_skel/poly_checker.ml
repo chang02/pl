@@ -187,8 +187,8 @@ let rec check1 : M.exp -> typ = fun e ->
       let t = findById id env in
       (match t with
       | SimpleTyp t -> (empty_subst, t)
-      | Gentyp (_, t) ->
-        let Gentyp (_, t') = subst_scheme empty_subst typescheme in
+      | GenTyp (_, t) ->
+        let GenTyp (_, t') = subst_scheme empty_subst typescheme in
         (empty_subst, t'))
     | M.FN (x, e) ->
       let v = TVar (new_var ()) in
