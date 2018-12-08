@@ -185,7 +185,7 @@ let rec check1 : M.exp -> typ = fun e ->
         | hd::tl -> if (fst hd) = id then (snd hd) else findById id tl)
       in
       let tmpt = findById id env in
-      (match t with
+      (match tmpt with
       | SimpleTyp t -> (empty_subst, t)
       | GenTyp (_, t) ->
         let GenTyp (_, t') = subst_scheme empty_subst tmpt in
