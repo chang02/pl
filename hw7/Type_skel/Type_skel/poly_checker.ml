@@ -15,6 +15,8 @@ type typ =
   | TLoc of typ
   | TFun of typ * typ
   | TVar of var
+  | TPrint of var
+  | TEqual of var
   (* Modify, or add more if needed *)
 
 type typ_scheme =
