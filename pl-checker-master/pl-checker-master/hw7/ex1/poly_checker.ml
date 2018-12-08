@@ -188,7 +188,7 @@ let rec check1 : M.exp -> typ = fun e ->
       (match t with
       | SimpleTyp t -> (empty_subst, t)
       | GenTyp (_, t) ->
-        let GenTyp (_, t') = subst_scheme empty_subst typescheme in
+        let GenTyp (_, t') = subst_scheme empty_subst t in
         (empty_subst, t'))
     | M.FN (x, e) ->
       let v = TVar (new_var ()) in
