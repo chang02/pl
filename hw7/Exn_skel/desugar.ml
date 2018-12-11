@@ -57,4 +57,4 @@ let removeExn : xexp -> xexp = fun xexp ->
 	in
 
 	let v = new_var () in
-	App (App (cps xexp, Fn (v, Var v)), Fn (v, Num 201712))
+	App (App (cps xexp, Fn (v, Var v)), Fn (v, Num 201812))
