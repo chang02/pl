@@ -204,9 +204,9 @@ let rec check1 : M.exp -> typ = fun e ->
       (s'' @@ s' @@ s, s'' tv1)
     | M.LET (M.VAL (x, e1), e2) ->
       let (s1, t1) = check1' env e1 in
-      if (expansive e1)
-      then let (s2, t2) = check1' ((x, SimpleTyp t1)::(subst_env s1 env)) e2 in (s2 @@ s1, t2)
-      else let (s2, t2) = check1' ((x, generalize (subst_env s1 env) t1)::(subst_env s1 env)) e2) in (s2 @@ s1, t2)
+      (if (expansive e1)
+      then (let (s2, t2) = check1' ((x, SimpleTyp t1)::(subst_env s1 env)) e2 in (s2 @@ s1, t2))
+      else (let (s2, t2) = check1' ((x, generalize (subst_env s1 env) t1)::(subst_env s1 env)) e2) in (s2 @@ s1, t2)))
     | M.LET (M.REC (f, x, e1), e2) ->
       let (s1, t1) = check1' ((f, SimpleTyp tv1)::env) (M.FN (x, e1)) in
       let s' = unify (s1 tv1) t1 in
