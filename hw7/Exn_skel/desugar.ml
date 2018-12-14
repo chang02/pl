@@ -56,7 +56,7 @@ let removeExn : xexp -> xexp = fun xexp ->
 			Fn (k, Fn (h, tmp2))
 		| Raise e -> 
 			let k, h = new_var (), new_var () in
-			Fn (k, Fn (h, App (App ((cps e), (Var h)), (Var h))))
+			Fn (k, Fn (h, apap (cps e) (Var h) (Var h)))
 	in
 
 	let v = new_var () in
