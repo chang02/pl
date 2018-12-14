@@ -212,7 +212,7 @@ let rec check1 : M.exp -> typ = fun e ->
       then (let (s2, t2) = check1' env' e2 in (s2 @@ s1, t2))
       else (let (s2, t2) = check1' env'' e2 in (s2 @@ s1, t2)))
     | M.LET (M.REC (f, x, e1), e2) ->
-      let env' = (f, SimepleTyp tv1)::env in
+      let env' = (f, SimpleTyp tv1)::env in
       let (s1, t1) = check1' env' (M.FN (x, e1)) in
       let s' = unify (s1 tv1) t1 in
       let env'' = (f, generalize (subst_env s1 env) (s' t1))::(subst_env s1 env) in
