@@ -195,47 +195,51 @@ let rec check1 : M.exp -> typ = fun e ->
         let GenTyp (_, t') = subst_scheme empty_subst tmpt in
         (empty_subst, t'))
     | M.FN (x, e) ->
-      let (s, t) = check1' ((x, SimpleTyp tv1)::env) e in
+      let env' = (x, SimpleTyp tv1)::env in
+      let (s, t) = check1' env' e in
       (s, TFun (s tv1, t))
     | M.APP (e1, e2) ->
       let (s, t) = check1' env e1 in
-      let (s', t') = check1' (subst_env s env) e2 in
+      let env' = subst_env s env in
+      let (s', t') = check1' env' e2 in
       let s'' = unify (s' t) (TFun (t', tv1)) in
       (s'' @@ s' @@ s, s'' tv1)
     | M.LET (M.VAL (x, e1), e2) ->
       let (s1, t1) = check1' env e1 in
+      let env' = (x, SimpleTyp t1)::(subst_env s1 env) in
+      let env'' = (x, generalize (subst_env s1 env) t1)::(subst_env s1 env) in
       (if (expansive e1)
-      then (let (s2, t2) = check1' ((x, SimpleTyp t1)::(subst_env s1 env)) e2 in (s2 @@ s1, t2))
-      else (let (s2, t2) = check1' ((x, generalize (subst_env s1 env) t1)::(subst_env s1 env)) e2 in (s2 @@ s1, t2)))
+      then (let (s2, t2) = check1' env' e2 in (s2 @@ s1, t2))
+      else (let (s2, t2) = check1' env'' e2 in (s2 @@ s1, t2)))
     | M.LET (M.REC (f, x, e1), e2) ->
-      let (s1, t1) = check1' ((f, SimpleTyp tv1)::env) (M.FN (x, e1)) in
+      let env' = (f, SimepleTyp tv1)::env
+      let (s1, t1) = check1' env' (M.FN (x, e1)) in
       let s' = unify (s1 tv1) t1 in
-      let (s2, t2) = check1' ((f, generalize (subst_env s1 env) (s' t1))::(subst_env s1 env)) e2 in
+      let env'' = (f, generalize (subst_env s1 env) (s' t1))::(subst_env s1 env) in
+      let (s2, t2) = check1' env'' e2 in
       (s2 @@ s' @@ s1, t2)
     | M.IF (e1, e2, e3) ->
       let (s1, t1) = check1' env e1 in
       let s' = unify t1 TBool in
-      let (s2, t2) = check1' (subst_env (s' @@ s1) env) e2 in
-      let (s3, t3) = check1' (subst_env (s' @@ s1) env) e3 in
+      let env' = (subst_env (s' @@ s1) env) in
+      let (s2, t2) = check1' env' e2 in
+      let (s3, t3) = check1' env' e3 in
       let s'' = unify t2 t3 in
       (s'' @@ s3 @@ s2 @@ s' @@ s1, t3)
     | M.BOP (b, e1, e2) ->
+      let (s, t) = check1' env e1 in
+      let env' = subst_env s env in
+      let (s', t') = check1' env' e2 in
       (match b with
       | M.ADD | M.SUB ->
-        let (s, t) = check1' env e1 in
-        let (s', t') = check1' (subst_env s env) e2 in
         let s1 = unify (s' t) TInt in
         let s2 = unify (s1 t') TInt in
         (s2 @@ s1 @@ s' @@ s, s2 t')
       | M.AND | M.OR ->
-        let (s, t) = check1' env e1 in
-        let (s', t') = check1' (subst_env s env) e2 in
         let s1 = unify (s' t) TBool in
         let s2 = unify t' TBool in
         (s2 @@ s1 @@ s' @@ s, s2 t')
       | M.EQ ->
-        let (s, t) = check1' env e1 in
-        let (s', t') = check1' (subst_env s env) e2 in
         let s1 = unify (s' t) t' in
         let s2 = unify (s1 t') te in
         (s2 @@ s1 @@ s' @@ s, TBool)
@@ -250,7 +254,8 @@ let rec check1 : M.exp -> typ = fun e ->
       (s, TLoc t)
     | M.ASSIGN (e1, e2) ->
       let (s, t) = check1' env e1 in
-      let (s', t') = check1' (subst_env s env) e2 in
+      let env' = subst_env s env in
+      let (s', t') = check1' env' e2 in
       let s'' = unify (s' t) (TLoc t') in
       (s'' @@ s' @@ s, s'' t')
     | M.BANG e ->
@@ -259,11 +264,13 @@ let rec check1 : M.exp -> typ = fun e ->
       (s' @@ s, s' tv1)
     | M.SEQ (e1, e2) ->
       let (s, t) = check1' env e1 in
-      let (s', t') = check1' (subst_env s env) e2 in
+      let env' = subst_env s env in
+      let (s', t') = check1' env' e2 in
       (s' @@ s, t')
     | M.PAIR (e1, e2) ->
       let (s, t) = check1' env e1 in
-      let (s', t') = check1' (subst_env s env) e2 in
+      let env' = subst_env s env in
+      let (s', t') = check1' env' e2 in
       (s' @@ s, TPair (s' t, t'))
     | M.FST e ->
       let (s, t) = check1' env e in
