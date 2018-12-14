@@ -43,7 +43,7 @@ let removeExn : xexp -> xexp = fun xexp ->
 			let k, h = new_var (), new_var () in
 			let v1, v2 = new_var (), new_var () in
 			let tmp1 = Fn (v2, App (Var k, Equal (Var v1, Var v2))) in
-			let tmp2 = Fn (v1, (apap (cps e2) tmp (Var h))) in
+			let tmp2 = Fn (v1, (apap (cps e2) tmp1 (Var h))) in
 			let tmp3 = (apap (cps e1) tmp2 (Var h)) in
 			Fn (k, Fn (h, tmp3))
 		| Handle (e1, n, e2) ->
