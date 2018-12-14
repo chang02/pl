@@ -12,7 +12,7 @@ let new_var () =
 
 let removeExn : xexp -> xexp = fun xexp ->
 	let rec cps : xexp -> xexp = fun e ->
-		let apap xexp -> xexp -> xexp -> xexp = fun e1 e2 e3 ->
+		let apap : xexp -> xexp -> xexp -> xexp = fun e1 e2 e3 ->
 			App (App (e1, e2), e3)
 		in
 		match e with
